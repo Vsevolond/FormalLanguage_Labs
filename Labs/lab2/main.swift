@@ -135,6 +135,15 @@ class Node {
         self.value = value
     }
     
+    private func setup(as node: Node) {
+        let newNode = node
+        newNode.left?.parent = self
+        newNode.right?.parent = self
+        self.left = newNode.left
+        self.right = newNode.right
+        self.value = newNode.value
+    }
+    
     func setNode(node: Node) {
         switch node.value {
             
@@ -151,9 +160,9 @@ class Node {
         let newNode = node
         newNode.parent = self
         if left != nil {
-            right = newNode
+            self.right = newNode
         } else {
-            left = newNode
+            self.left = newNode
         }
     }
     
@@ -173,7 +182,11 @@ class Node {
                     self.value = .terminal(.emptySet)
                     
                 case .union:
-                    self.value = value
+                    if left.value == value {
+                        setup(as: left)
+                    } else {
+                        setup(as: right)
+                    }
                     
                 case .iteration:
                     return
@@ -190,7 +203,11 @@ class Node {
                 switch operation {
                     
                 case .concat, .shuffle:
-                    self.value = value
+                    if left.value == value {
+                        setup(as: left)
+                    } else {
+                        setup(as: right)
+                    }
                     
                 case .union:
                     if value == .terminal(.epsilon) {
@@ -211,7 +228,7 @@ class Node {
         }
     }
     
-    private func hasEmptyString() -> Bool {
+    func hasEmptyString() -> Bool {
         switch value {
             
         case .terminal(let terminal):
@@ -292,7 +309,7 @@ class Node {
                     return newNode
                 }
                 
-                newNode.setChilds(left: left.derivative(by: letter), right: left)
+                newNode.setChilds(left: left.derivative(by: letter), right: self)
                 return newNode
                 
             case .shuffle:
@@ -340,7 +357,7 @@ class Node {
 
 class Tree {
     var root: Node?
-    var alphabet = Set<Character>()
+    var terminals = Set<Character>()
     
     init(root: Node) {
         self.root = root
@@ -399,7 +416,7 @@ class Tree {
             case .letter(let char):
                 let newNode = Node(value: .terminal(.letter(char)))
                 nodesStack.push(newNode)
-                alphabet.insert(char)
+                terminals.insert(char)
                 
             case .unexpected:
                 continue
@@ -436,18 +453,97 @@ class Tree {
         let newRoot = root.derivative(by: letter)
         return Tree(root: newRoot)
     }
+    
+    func hasEmptyWord() -> Bool {
+        guard let root else {
+            fatalError("no tree")
+        }
+        return root.hasEmptyString()
+    }
+}
+
+// MARK: - FSM State
+
+struct State: Equatable {
+    let id: Int
+    let regex: String
+    
+    static func ==(lhs: State, rhs: State) -> Bool {
+        return lhs.regex == rhs.regex
+    }
+}
+
+// MARK: - FSM Transition
+
+struct Transition {
+    let from: State
+    let to: State
+    let by: Character
 }
 
 // MARK: - Automata
 
 class FSM {
+    var states = [State]()
+    var terminals: Set<Character>
+    var transitions = [Transition]()
+    var initialState: State
+    var finalStates = [State]()
     
+    init(tree: Tree) {
+        guard let root = tree.root else {
+            fatalError("no tree")
+        }
+        self.terminals = tree.terminals
+        self.initialState = .init(id: 0, regex: root.toRegex())
+        self.states.append(initialState)
+        setup(by: tree, from: initialState)
+    }
+    
+    private func setup(by tree: Tree, from state: State) {
+        for terminal in terminals {
+            let derivative = tree.derivative(by: terminal)
+            let newState = State(id: states.count, regex: derivative.toRegex())
+            var newTransition: Transition
+            if let existState = states.first(where: { $0.regex == newState.regex }) {
+                newTransition = .init(from: state, to: existState, by: terminal)
+            } else {
+                states.append(newState)
+                if derivative.hasEmptyWord() {
+                    finalStates.append(newState)
+                }
+                newTransition = .init(from: state, to: newState, by: terminal)
+                setup(by: derivative, from: newState)
+            }
+            transitions.append(newTransition)
+        }
+    }
+    
+    func debug() {
+        for state in states.sorted(by: { $0.id < $1.id }) {
+            if state == initialState {
+                print("q\(state.id) = \(state.regex) - initial")
+            } else {
+                let isFinal = finalStates.contains(state)
+                print("q\(state.id) = \(state.regex)\(isFinal ? " - final" : "")")
+            }
+        }
+        for transition in transitions.sorted(by: { $0.from.id <= $1.from.id }) {
+            let from = transition.from.id
+            let to = transition.to.id
+            let by = transition.by
+            print("q\(from) -- \(by) --> q\(to)")
+        }
+    }
 }
 
 // MARK: - MAIN
 
 let regex = Regex(string: "((((a|b)*)&a)&(a|b))")
+
 let tree = Tree(regex: regex)
-print(tree.toRegex())
-let derivative = tree.derivative(by: "a")
-print(derivative.toRegex())
+let fsm = FSM(tree: tree)
+
+fsm.debug()
+
+
