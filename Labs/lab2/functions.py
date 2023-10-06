@@ -12,6 +12,16 @@ class Operation(Enum):
     def get_random(cls):
         return random.choice(list(cls))
 
+    @classmethod
+    def get_binary_operands(cls):
+        binary_operands = [cls.AND.value, cls.OR.value, cls.SHARP.value]
+        return binary_operands
+
+    @classmethod
+    def get_unary_operands(cls):
+        unary_operands = [cls.STAR.value]
+        return unary_operands
+
 
 class TreeNode:
     def __init__(self, value='', left=None, right=None):
@@ -52,11 +62,11 @@ class TreeNode:
         return result
 
     def infix_expression(self):
-        if self.value in [Operation.OR.value, Operation.AND.value]:
+        if self.value in Operation.get_binary_operands():
             left_expr = self.left.infix_expression()
             right_expr = self.right.infix_expression()
             return f"({left_expr} {self.value} {right_expr})"
-        elif self.value in [Operation.STAR.value, Operation.SHARP.value]:
+        elif self.value in Operation.get_unary_operands():
             left_expr = self.left.infix_expression()
             return f"({left_expr} {self.value})"
         else:
@@ -80,7 +90,7 @@ def get_random_regex(alph_size=2, st_height=1, max_letters=5):
             left_child = build_random_expression(height - 1)
             right_child = None
 
-            if operation in [Operation.OR, Operation.AND]:
+            if operation.value in Operation.get_binary_operands():
                 right_child = build_random_expression(height - 1)
 
             operation_node = TreeNode(operation.value, left_child, right_child)
