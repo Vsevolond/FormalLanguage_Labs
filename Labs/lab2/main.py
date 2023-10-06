@@ -1,5 +1,8 @@
+from functions import *
+
+
 def main():
-    filename = input("Enter the filename: ")  # "input.txt"
+    filename = "input.txt"  # input("Enter the filename: ")
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0
@@ -15,6 +18,8 @@ def main():
                     maximum_number_of_letters = int(value)
                 case _:
                     print(f"Unknown parameter: {key}")
+
+    print(get_random_regex(3, 3, 5))
 
 
 if __name__ == "__main__":

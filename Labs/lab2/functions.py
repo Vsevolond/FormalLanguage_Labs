@@ -40,7 +40,7 @@ class TreeNode:
             return False
 
     def __str__(self):
-        return self.display_tree()
+        return f"{self.infix_expression()}\n{self.display_tree()}"
 
     def display_tree(self, depth=0):
         indent = '  ' * depth
@@ -50,3 +50,41 @@ class TreeNode:
         if self.right:
             result += self.right.display_tree(depth + 1)
         return result
+
+    def infix_expression(self):
+        if self.value in [Operation.OR.value, Operation.AND.value]:
+            left_expr = self.left.infix_expression()
+            right_expr = self.right.infix_expression()
+            return f"({left_expr} {self.value} {right_expr})"
+        elif self.value in [Operation.STAR.value, Operation.SHARP.value]:
+            left_expr = self.left.infix_expression()
+            return f"({left_expr} {self.value})"
+        else:
+            return str(self.value)
+
+
+def get_alphabet(size=1) -> list:
+    alphabet = [chr(ord('a') + i) for i in range(size)]
+    return alphabet
+
+
+def get_random_regex(alph_size=2, st_height=1, max_letters=5):
+    alphabet = get_alphabet(alph_size)
+
+    def build_random_expression(height):
+        if height == 0:
+            return TreeNode(random.choice(alphabet))
+        else:
+            operation = Operation.get_random()
+
+            left_child = build_random_expression(height - 1)
+            right_child = None
+
+            if operation in [Operation.OR, Operation.AND]:
+                right_child = build_random_expression(height - 1)
+
+            operation_node = TreeNode(operation.value, left_child, right_child)
+            return operation_node
+
+    regex = build_random_expression(st_height)
+    return regex
