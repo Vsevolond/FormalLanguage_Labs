@@ -118,7 +118,11 @@ struct Regex {
 
 // MARK: - Node
 
-class Node {
+class Node: Equatable {
+    static func == (lhs: Node, rhs: Node) -> Bool {
+        return lhs.value == rhs.value && lhs.left == rhs.left && lhs.right == rhs.right
+    }
+    
     
     enum Value: Equatable {
         
@@ -223,8 +227,30 @@ class Node {
             }
             
         default:
-            setNode(node: left)
-            setNode(node: right)
+            switch self.value {
+                
+            case .terminal(_):
+                return
+                
+            case .operation(let operation):
+                switch operation {
+                    
+                case .concat, .shuffle:
+                    setNode(node: left)
+                    setNode(node: right)
+                    
+                case .union:
+                    if left == right {
+                        setup(as: left)
+                    } else {
+                        setNode(node: left)
+                        setNode(node: right)
+                    }
+                    
+                case .iteration:
+                    return
+                }
+            }
         }
     }
     
@@ -539,9 +565,10 @@ class FSM {
 
 // MARK: - MAIN
 
-let regex = Regex(string: "((((a|b)*)&a)&(a|b))")
+let regex = Regex(string: "(((((a*)|b)*)&a)&(a|(b*)))")
 
 let tree = Tree(regex: regex)
+
 let fsm = FSM(tree: tree)
 
 fsm.debug()
