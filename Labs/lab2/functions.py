@@ -20,13 +20,25 @@ class Operation(Enum):
             raise ValueError("No available operations to choose from")
 
     @classmethod
-    def get_binary_operands(cls):
-        binary_operands = [cls.AND.value, cls.OR.value, cls.SHARP.value]
+    def get_binary_operands(cls, by=""):
+        if by == "name":
+            binary_operands = [cls.AND.name, cls.OR.name, cls.SHARP.name]
+        elif by == "value":
+            binary_operands = [cls.AND.value, cls.OR.value, cls.SHARP.value]
+        else:
+            binary_operands = [cls.AND, cls.OR, cls.SHARP]
+
         return binary_operands
 
     @classmethod
-    def get_unary_operands(cls):
-        unary_operands = [cls.STAR.value]
+    def get_unary_operands(cls, by=""):
+        if by == "name":
+            unary_operands = [cls.STAR.name]
+        elif by == "value":
+            unary_operands = [cls.STAR.value]
+        else:
+            unary_operands = [cls.STAR]
+
         return unary_operands
 
 
@@ -69,11 +81,11 @@ class TreeNode:
         return result
 
     def infix_expression(self):
-        if self.value in Operation.get_binary_operands():
+        if self.value in Operation.get_binary_operands(by="value"):
             left_expr = self.left.infix_expression()
             right_expr = self.right.infix_expression()
             return f"({left_expr} {self.value} {right_expr})"
-        elif self.value in Operation.get_unary_operands():
+        elif self.value in Operation.get_unary_operands(by="value"):
             left_expr = self.left.infix_expression()
             return f"({left_expr} {self.value})"
         else:
@@ -85,32 +97,38 @@ def get_alphabet(size=1) -> list:
     return alphabet
 
 
-def get_random_regex(alph_size=2, st_height=1, max_letters=5):
+def get_random_regex(alph_size=3, st_height=1, max_letters=3):
     alphabet = get_alphabet(alph_size)
     true_max_letters = random.randint(0, max_letters)
 
-    def build_random_expression(stars=0, letters=0):
-        if letters == true_max_letters:
-            return TreeNode(random.choice(alphabet))
-        else:
-            operation = Operation.get_random()
-
-            if operation == Operation.STAR:
-                if stars > st_height:
-                    operation = Operation.get_random(exclude=[Operation.STAR])
-                else:
-                    stars += 1
-                left_child = build_random_expression(stars, letters + 1)
+    def build_random_expression(letters_cnt, stars=0):
+        if letters_cnt == 0:
+            return None
+        elif letters_cnt == 1:
+            decision = random.randint(1, 100)
+            if stars < st_height and decision < 50:
+                operation = Operation.get_random(exclude=Operation.get_binary_operands())
             else:
-                left_child = build_random_expression(letters=letters + 1)
+                return TreeNode(random.choice(alphabet))
+        else:
+            operation = Operation.get_random(exclude=[] if stars <= st_height else [Operation.STAR])
 
-            right_child = None
+        right_leaves = letters_cnt // 2
+        left_leaves = letters_cnt - right_leaves
 
-            if operation.value in Operation.get_binary_operands():
-                right_child = build_random_expression(letters=letters + 1)
+        if operation == Operation.STAR and stars <= st_height:
+            stars += 1
+        else:
+            stars = 0
 
-            operation_node = TreeNode(operation.value, left_child, right_child)
-            return operation_node
+        left_tree = build_random_expression(left_leaves, stars)
 
-    regex = build_random_expression(max_letters)
+        if operation in Operation.get_binary_operands():
+            right_tree = build_random_expression(right_leaves, stars)
+        else:
+            right_tree = None
+
+        return TreeNode(operation.value, left_tree, right_tree)
+
+    regex = build_random_expression(true_max_letters)
     return regex
