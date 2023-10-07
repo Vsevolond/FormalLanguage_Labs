@@ -9,8 +9,15 @@ class Operation(Enum):
     SHARP = "#"
 
     @classmethod
-    def get_random(cls):
-        return random.choice(list(cls))
+    def get_random(cls, exclude=None):
+        if exclude is None:
+            exclude = []
+
+        available_operations = [op for op in cls if op not in exclude]
+        if available_operations:
+            return random.choice(available_operations)
+        else:
+            raise ValueError("No available operations to choose from")
 
     @classmethod
     def get_binary_operands(cls):
@@ -80,21 +87,30 @@ def get_alphabet(size=1) -> list:
 
 def get_random_regex(alph_size=2, st_height=1, max_letters=5):
     alphabet = get_alphabet(alph_size)
+    true_max_letters = random.randint(0, max_letters)
 
-    def build_random_expression(height):
-        if height == 0:
+    def build_random_expression(stars=0, letters=0):
+        if letters == true_max_letters:
             return TreeNode(random.choice(alphabet))
         else:
             operation = Operation.get_random()
 
-            left_child = build_random_expression(height - 1)
+            if operation == Operation.STAR:
+                if stars > st_height:
+                    operation = Operation.get_random(exclude=[Operation.STAR])
+                else:
+                    stars += 1
+                left_child = build_random_expression(stars, letters + 1)
+            else:
+                left_child = build_random_expression(letters=letters + 1)
+
             right_child = None
 
             if operation.value in Operation.get_binary_operands():
-                right_child = build_random_expression(height - 1)
+                right_child = build_random_expression(letters=letters + 1)
 
             operation_node = TreeNode(operation.value, left_child, right_child)
             return operation_node
 
-    regex = build_random_expression(st_height)
+    regex = build_random_expression(max_letters)
     return regex
