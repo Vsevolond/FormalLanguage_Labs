@@ -1,3 +1,3 @@
-alphabet_size = 2
-stellar_height = 1
-maximum_number_of_letters = 2
+alphabet_size = 3
+stellar_height = 3
+maximum_number_of_letters = 3

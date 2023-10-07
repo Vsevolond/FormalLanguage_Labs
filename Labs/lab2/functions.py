@@ -69,7 +69,7 @@ class TreeNode:
             return False
 
     def __str__(self):
-        return f"{self.infix_expression()}\n{self.display_tree()}"
+        return self.infix_expression()
 
     def display_tree(self, depth=0):
         indent = '  ' * depth
@@ -103,7 +103,7 @@ def get_random_regex(alph_size=3, st_height=1, max_letters=3):
 
     def build_random_expression(letters_cnt, stars=0):
         if letters_cnt == 0:
-            return None
+            return "No expression"
         elif letters_cnt == 1:
             decision = random.randint(1, 100)
             if stars < st_height and decision < 50:
