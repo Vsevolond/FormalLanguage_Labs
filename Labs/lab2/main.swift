@@ -20,6 +20,20 @@ extension Character {
     }
 }
 
+extension Array where Element == Transition {
+    func union() -> Element? {
+        guard let first else {
+            return nil
+        }
+        let tree = Tree(root: first.by)
+        for transition in self {
+            tree.addNode(node: transition.by)
+        }
+        let transition = Transition(from: first.from, to: first.to, by: tree.root)
+        return transition
+    }
+}
+
 // MARK: - Stack
 
 struct Stack<Element> {
@@ -43,7 +57,7 @@ struct Stack<Element> {
 
 struct Regex {
     
-    enum Operation: Equatable {
+    enum Operation: Equatable, Hashable {
         
         case union
         case concat
@@ -60,7 +74,7 @@ struct Regex {
         }
     }
     
-    enum Terminal: Equatable {
+    enum Terminal: Equatable, Hashable {
         
         case epsilon
         case emptySet
@@ -99,32 +113,45 @@ struct Regex {
         }
     }
     
-    let string: String
+    var symbols: [Symbol] = []
+    var terminals = Set<Terminal>()
     
-    func formatted() -> [Symbol] {
+    init(string: String) {
+        setup(from: string)
+    }
+    
+    mutating private func setup(from string: String) {
         let array: [Character] = string.split(separator: "").map { Character(String($0)) }
-        var result: [Symbol] = []
         
         for symbol in array {
-            if symbol.formatted() == .unexpected {
+            switch symbol.formatted() {
+            case .letter(let char):
+                terminals.insert(.letter(char))
+            case .unexpected:
                 fatalError("Unexpected symbol: \(symbol)")
+            default:
+                break
             }
-            result.append(symbol.formatted())
+            symbols.append(symbol.formatted())
         }
-        
-        return result
     }
 }
 
 // MARK: - Node
 
-class Node: Equatable {
+class Node: Equatable, Hashable {
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+        hasher.combine(parent)
+        hasher.combine(left)
+        hasher.combine(right)
+    }
+    
     static func == (lhs: Node, rhs: Node) -> Bool {
         return lhs.value == rhs.value && lhs.left == rhs.left && lhs.right == rhs.right
     }
     
-    
-    enum Value: Equatable {
+    enum Value: Equatable, Hashable {
         
         case terminal(Regex.Terminal)
         case operation(Regex.Operation)
@@ -281,11 +308,11 @@ class Node: Equatable {
         }
     }
     
-    func derivative(by letter: Character) -> Node {
+    func derivative(by letter: Regex.Terminal) -> Node {
         switch value {
             
         case .terminal(let terminal):
-            if terminal.value == letter {
+            if terminal == letter {
                 return Node(value: .terminal(.epsilon))
             } else {
                 return Node(value: .terminal(.emptySet))
@@ -382,19 +409,20 @@ class Node: Equatable {
 // MARK: - Tree
 
 class Tree {
-    var root: Node?
-    var terminals = Set<Character>()
+    var root: Node
+    var terminals = Set<Regex.Terminal>()
     
     init(root: Node) {
         self.root = root
     }
     
     init(regex: Regex) {
-        let formatted = regex.formatted()
-        setup(with: formatted)
+        let symbols = regex.symbols
+        self.terminals = regex.terminals
+        self.root = Self.setup(with: symbols)
     }
     
-    private func setup(with array: [Regex.Symbol]) {
+    static private func setup(with array: [Regex.Symbol]) -> Node {
         var symbolsStack = Stack<Regex.Symbol>()
         var nodesStack = Stack<Node>()
         
@@ -442,7 +470,6 @@ class Tree {
             case .letter(let char):
                 let newNode = Node(value: .terminal(.letter(char)))
                 nodesStack.push(newNode)
-                terminals.insert(char)
                 
             case .unexpected:
                 continue
@@ -459,31 +486,29 @@ class Tree {
             perform()
         }
         
-        root = nodesStack.pop()
+        let root = nodesStack.pop()
         guard nodesStack.top() == nil else {
             fatalError("Stack is not empty")
         }
+        return root
+    }
+    
+    func addNode(node: Node) {
+        let newNode = Node(value: .operation(.union))
+        newNode.setChilds(left: root, right: node)
+        root = newNode
     }
     
     func toRegex() -> String {
-        guard let root else {
-            return "no tree"
-        }
         return root.toRegex()
     }
     
-    func derivative(by letter: Character) -> Tree {
-        guard let root else {
-            fatalError("no tree")
-        }
-        let newRoot = root.derivative(by: letter)
+    func derivative(by terminal: Regex.Terminal) -> Tree {
+        let newRoot = root.derivative(by: terminal)
         return Tree(root: newRoot)
     }
     
     func hasEmptyWord() -> Bool {
-        guard let root else {
-            fatalError("no tree")
-        }
         return root.hasEmptyString()
     }
 }
@@ -492,53 +517,69 @@ class Tree {
 
 struct State: Equatable {
     let id: Int
-    let regex: String
+    let regex: Node
     
     static func ==(lhs: State, rhs: State) -> Bool {
         return lhs.regex == rhs.regex
     }
+    
+//    func isDead(for terminals: Set<Regex.Terminal>) -> Bool {
+//        var derivatives = Set<Node>()
+//        for terminal in terminals {
+//            let derivative = regex.derivative(by: terminal)
+//            derivatives.insert(derivative)
+//        }
+//        return derivatives.count == 1
+//    }
 }
 
 // MARK: - FSM Transition
 
-struct Transition {
+struct Transition: Equatable {
     let from: State
     let to: State
-    let by: Character
+    let by: Node
+    
+    func toRegex() -> String {
+        return by.toRegex()
+            .replacingOccurrences(of: "&", with: "")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+    }
 }
 
 // MARK: - Automata
 
-class FSM {
+struct FSM {
     var states = [State]()
-    var terminals: Set<Character>
+    var terminals: Set<Regex.Terminal>
     var transitions = [Transition]()
     var initialState: State
     var finalStates = [State]()
     
     init(tree: Tree) {
-        guard let root = tree.root else {
-            fatalError("no tree")
-        }
         self.terminals = tree.terminals
-        self.initialState = .init(id: 0, regex: root.toRegex())
+        self.initialState = .init(id: 0, regex: tree.root)
         self.states.append(initialState)
         setup(by: tree, from: initialState)
     }
     
-    private func setup(by tree: Tree, from state: State) {
+    mutating private func setup(by tree: Tree, from state: State) {
         for terminal in terminals {
             let derivative = tree.derivative(by: terminal)
-            let newState = State(id: states.count, regex: derivative.toRegex())
+            guard derivative.root.value != .terminal(.emptySet) else {
+                continue
+            }
+            let newState = State(id: states.count, regex: derivative.root)
             var newTransition: Transition
-            if let existState = states.first(where: { $0.regex == newState.regex }) {
-                newTransition = .init(from: state, to: existState, by: terminal)
+            if let existState = states.first(where: { $0 == newState }) {
+                newTransition = .init(from: state, to: existState, by: Node(value: .terminal(terminal)))
             } else {
                 states.append(newState)
                 if derivative.hasEmptyWord() {
                     finalStates.append(newState)
                 }
-                newTransition = .init(from: state, to: newState, by: terminal)
+                newTransition = .init(from: state, to: newState, by: Node(value: .terminal(terminal)))
                 setup(by: derivative, from: newState)
             }
             transitions.append(newTransition)
@@ -548,29 +589,107 @@ class FSM {
     func debug() {
         for state in states.sorted(by: { $0.id < $1.id }) {
             if state == initialState {
-                print("q\(state.id) = \(state.regex) - initial")
+                print("q\(state.id) = \(state.regex.toRegex()) - initial")
             } else {
                 let isFinal = finalStates.contains(state)
-                print("q\(state.id) = \(state.regex)\(isFinal ? " - final" : "")")
+                print("q\(state.id) = \(state.regex.toRegex())\(isFinal ? " - final" : "")")
             }
         }
-        for transition in transitions.sorted(by: { $0.from.id <= $1.from.id }) {
+        for transition in transitions.sorted(by: { $0.from.id < $1.from.id || ($0.from.id == $1.from.id && $0.to.id < $1.to.id) }) {
             let from = transition.from.id
             let to = transition.to.id
-            let by = transition.by
+            let by = transition.toRegex()
             print("q\(from) -- \(by) --> q\(to)")
         }
     }
+    
+    mutating func toRegex() -> String {
+        makeNewInitialState()
+        makeNewFinalState()
+        eliminateStates()
+        
+        guard let union = transitions.union() else {
+            fatalError("no transitions")
+        }
+        return union.by.toRegex()
+    }
+    
+    mutating private func eliminateStates() {
+        while states.count != 0 {
+            let state = states.removeFirst()
+            
+            let iterationTransition = transitions.filter { $0.from == state && $0.from == $0.to }.union()
+            let toStateTransitions = transitions.filter { $0.to == state && $0.from != state }
+            let fromStateTransitions = transitions.filter { $0.from == state && $0.to != state }
+            
+            
+            for toStateTransition in toStateTransitions {
+                for fromStateTransition in fromStateTransitions {
+                    let newNode = Node(value: .operation(.concat))
+                    if let iterationTransition {
+                        let leftNode = Node(value: .operation(.concat))
+                        let iterationNode = Node(value: .operation(.iteration))
+                        iterationNode.setNode(node: iterationTransition.by)
+                        leftNode.setChilds(left: toStateTransition.by, right: iterationNode)
+                        newNode.setChilds(left: leftNode, right: fromStateTransition.by)
+                    } else {
+                        newNode.setChilds(left: toStateTransition.by, right: fromStateTransition.by)
+                    }
+                    let newTransition = Transition(from: toStateTransition.from, to: fromStateTransition.to, by: newNode)
+                    transitions.append(newTransition)
+                }
+            }
+            
+            transitions.removeAll { $0.from.id == state.id || $0.to.id == state.id }
+        }
+    }
+    
+    mutating private func makeNewInitialState() {
+        let newInitialState = State(id: -1, regex: Node(value: .terminal(.epsilon)))
+        let newTransition = Transition(from: newInitialState, to: initialState, by: Node(value: .terminal(.epsilon)))
+        transitions.append(newTransition)
+        initialState = newInitialState
+    }
+    
+    mutating private func makeNewFinalState() {
+        guard finalStates.count > 0 else {
+            fatalError("no final states")
+        }
+        let newFinalState = State(id: states.count, regex: Node(value: .terminal(.epsilon)))
+        for finalState in finalStates {
+            let newTransition = Transition(from: finalState, to: newFinalState, by: Node(value: .terminal(.epsilon)))
+            transitions.append(newTransition)
+        }
+        finalStates = [newFinalState]
+    }
+    
+//    mutating private func removeDeadStates() {
+//        var i = 0
+//        while i < states.count {
+//            let state = states[i]
+//            
+//            if !finalStates.contains(state) && state.isDead(for: terminals) {
+//                states.remove(at: i)
+//                transitions.removeAll { $0.from == state || $0.to == state }
+//            } else {
+//                i += 1
+//            }
+//        }
+//    }
 }
 
 // MARK: - MAIN
 
-let regex = Regex(string: "(((((a*)|b)*)&a)&(a|(b*)))")
+let regex = Regex(string: "(((((c*)*)*)&a)*)")
 
 let tree = Tree(regex: regex)
 
-let fsm = FSM(tree: tree)
+var fsm = FSM(tree: tree)
 
 fsm.debug()
+print(fsm.toRegex().replacingOccurrences(of: "&", with: ""))
+
+
+// x* = xx*|ε = xx∗|x∗ ?????
 
 
