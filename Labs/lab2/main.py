@@ -32,9 +32,12 @@ def main():
                     print(f"Unknown parameter: {key}")
 
     with open(output_file, "w", encoding='utf-8') as file:
-        file.write(str(get_random_regex(alph_size=alphabet_size,
-                                        st_height=stellar_height,
-                                        max_letters=maximum_number_of_letters)))
+        for _ in range(10):
+            file.write(str(get_random_regex(
+                alph_size=alphabet_size,
+                st_height=stellar_height,
+                max_letters=maximum_number_of_letters)) + '\n')
+
 
 
 if __name__ == "__main__":

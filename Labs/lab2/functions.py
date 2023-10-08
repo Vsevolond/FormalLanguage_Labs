@@ -99,7 +99,7 @@ def get_alphabet(size=1) -> list:
 
 def get_random_regex(alph_size=3, st_height=1, max_letters=3):
     alphabet = get_alphabet(alph_size)
-    true_max_letters = random.randint(0, max_letters)
+    true_max_letters = random.randint(1, max_letters)
 
     def build_random_expression(letters_cnt, stars=0):
         if letters_cnt == 0:
