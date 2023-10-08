@@ -39,6 +39,5 @@ def main():
                 max_letters=maximum_number_of_letters)) + '\n')
 
 
-
 if __name__ == "__main__":
     main()

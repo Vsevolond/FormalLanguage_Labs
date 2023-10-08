@@ -84,10 +84,10 @@ class TreeNode:
         if self.value in Operation.get_binary_operands(by="value"):
             left_expr = self.left.infix_expression()
             right_expr = self.right.infix_expression()
-            return f"({left_expr} {self.value} {right_expr})"
+            return f"({left_expr}{self.value}{right_expr})"
         elif self.value in Operation.get_unary_operands(by="value"):
             left_expr = self.left.infix_expression()
-            return f"({left_expr} {self.value})"
+            return f"({left_expr}{self.value})"
         else:
             return str(self.value)
 
