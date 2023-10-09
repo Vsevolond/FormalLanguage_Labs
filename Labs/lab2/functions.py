@@ -1,4 +1,5 @@
 import random
+import json
 from enum import Enum
 
 
@@ -92,12 +93,78 @@ class TreeNode:
             return str(self.value)
 
 
+class Transition:
+    def __init__(self, from_state: int, to_state: int, by_symbol: str):
+        self.from_state = from_state
+        self.to_state = to_state
+        self.by_symbol = by_symbol
+
+    def edit_from(self, new_from):
+        self.from_state = new_from
+
+    def edit_to(self, new_to):
+        self.to_state = new_to
+
+    def edit_by(self, new_by):
+        self.by_symbol = new_by
+
+    def __str__(self):
+        return f"from: {self.from_state}, to: {self.to_state}, by: {self.by_symbol}"
+
+
+class FSM:
+    def __init__(self, initial_state: set, states: set, final_states: set,
+                 transitions: [Transition], terminals: [str]):
+        self.initial_state = initial_state
+        self.states = states
+        self.final_states = final_states
+        self.transitions = [Transition(**t) for t in transitions]
+        self.terminals = terminals
+
+    def __str__(self):
+        result = "{\n"
+        result += f"\tSTATES: {self.states}\n"
+        result += f"\tFINAL_STATES: {self.final_states}\n"
+        result += f"\tTRANSITIONS: {[str(t) for t in self.transitions]}\n"
+        result += f"\tTERMINALS: {self.terminals}\n"
+        result += "}"
+        return result
+
+
+class Expression:
+    def __init__(self, input: str, output: str, fsm: dict):
+        self.input = input
+        self.output = output
+        self.fsm = FSM(**fsm)
+
+    def __str__(self):
+        result = "{\n"
+        result += f"INPUT: {self.input}\n"
+        result += f"OUTPUT: {self.output}\n"
+        result += f"FSM:\n{self.fsm}\n"
+        result += "}"
+        return result
+
+
+def get_exprs(filename: str):
+    exprs = []
+    for regex in parse_json(filename):
+        exprs.append(Expression(**regex))
+    return exprs
+
+
 def get_alphabet(size=1) -> list:
     alphabet = [chr(ord('a') + i) for i in range(size)]
     return alphabet
 
 
-def get_random_regex(alph_size=3, st_height=1, max_letters=3):
+def parse_json(filename):
+    with open(filename, 'r') as file:
+        result = json.load(file)
+    return result
+
+
+def get_random_regex(alph_size=3, st_height=1, max_letters=3) -> TreeNode:
     alphabet = get_alphabet(alph_size)
     true_max_letters = random.randint(1, max_letters)
 

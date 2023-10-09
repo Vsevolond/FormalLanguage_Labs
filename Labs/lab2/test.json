@@ -1,0 +1,34 @@
+[
+  {
+    "input": "(((((a*)|b)*)&a)&(a|(b*)))",
+    "output": "(((((((b)*aa(a)*|(b)*ab",
+    "fsm": {
+      "initial_state": 0,
+      "states": [
+        0,
+        1,
+        2
+      ],
+      "final_states": [
+        1,
+        2
+      ],
+      "transitions": [
+        {
+          "from_state": 0,
+          "to_state": 1,
+          "by_symbol": "a"
+        },
+        {
+          "from_state": 1,
+          "to_state": 2,
+          "by_symbol": "b"
+        }
+      ],
+      "terminals": [
+        "a",
+        "b"
+      ]
+    }
+  }
+]
