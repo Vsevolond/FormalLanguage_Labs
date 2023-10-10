@@ -524,15 +524,6 @@ struct State: Equatable {
     static func ==(lhs: State, rhs: State) -> Bool {
         return lhs.regex == rhs.regex
     }
-    
-//    func isDead(for terminals: Set<Regex.Terminal>) -> Bool {
-//        var derivatives = Set<Node>()
-//        for terminal in terminals {
-//            let derivative = regex.derivative(by: terminal)
-//            derivatives.insert(derivative)
-//        }
-//        return derivatives.count == 1
-//    }
 }
 
 // MARK: - FSM Transition
@@ -668,34 +659,95 @@ struct FSM {
         }
         finalStates = [newFinalState]
     }
+}
+
+func readFromFile() -> [String] {
+    let fileName = "output.txt"
+    guard let text = try? String(contentsOfFile: fileName) else {
+        return []
+    }
+    let split = text.split(separator: "\n")
+    var res: [String] = []
     
-//    mutating private func removeDeadStates() {
-//        var i = 0
-//        while i < states.count {
-//            let state = states[i]
-//            
-//            if !finalStates.contains(state) && state.isDead(for: terminals) {
-//                states.remove(at: i)
-//                transitions.removeAll { $0.from == state || $0.to == state }
-//            } else {
-//                i += 1
-//            }
-//        }
-//    }
+    for line in split {
+        let splitLine = line.components(separatedBy: CharacterSet(charactersIn: " ")).filter { !$0.isEmpty }
+        res.append(contentsOf: splitLine)
+    }
+    
+    return res
+}
+
+struct TransitionJSONModel: Encodable {
+    let from: Int
+    let to: Int
+    let by: String
+    
+    private enum CodingKeys: String, CodingKey {
+        case from = "from_state"
+        case to = "to_state"
+        case by = "by_symbol"
+    }
+    
+    init(from transition: Transition) {
+        from = transition.from.id
+        to = transition.to.id
+        by = transition.by.toRegex()
+    }
+}
+
+struct FSMJSONModel: Encodable {
+    let initialState: Int
+    let states: [Int]
+    let finalStates: [Int]
+    let transitions: [TransitionJSONModel]
+    
+    private enum CodingKeys: String, CodingKey {
+        case initialState = "initial_state"
+        case states
+        case finalStates = "final_states"
+        case transitions
+    }
+    
+    init(from fsm: FSM) {
+        initialState = fsm.initialState.id
+        states = fsm.states.map { $0.id }
+        finalStates = fsm.finalStates.map { $0.id }
+        transitions = fsm.transitions.map { .init(from: $0) }
+    }
+}
+
+struct Response: Encodable {
+    let input: String
+    let output: String
+    let fsm: FSMJSONModel
 }
 
 // MARK: - MAIN
 
-let regex = Regex(string: "(((((b*)*)*)#(a*))*)")
-
-let tree = Tree(regex: regex)
-
-var fsm = FSM(tree: tree)
-
-fsm.debug()
-print(fsm.toRegex().replacingOccurrences(of: "&", with: ""))
-
-
 // x* = xx*|ε = xx∗|x∗ ?????
+var responses: [Response] = []
+let regs = readFromFile()
+for reg in regs {
+    let regex = Regex(string: reg)
+    let tree = Tree(regex: regex)
+    let fsm = FSM(tree: tree)
+    var outputFSM = fsm
+    let output = outputFSM.toRegex()
+    let response = Response(input: reg, output: output, fsm: .init(from: fsm))
+    responses.append(response)
+}
+
+let encoder = JSONEncoder()
+encoder.outputFormatting = .prettyPrinted
+let data = try encoder.encode(responses)
+guard let string = String(data: data, encoding: .utf8) else {
+    fatalError("error in encoding data")
+}
+
+let directoryPath = FileManager.default.currentDirectoryPath
+let resultPath = directoryPath.appending("/result.json")
+FileManager.default.createFile(atPath: resultPath, contents: nil)
+try string.write(toFile: resultPath, atomically: true, encoding: .utf8)
+
 
 
