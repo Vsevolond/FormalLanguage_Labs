@@ -40,6 +40,7 @@
 		A0B395F32ABDD3B500A80A69 /* input.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = input.txt; sourceTree = "<group>"; };
 		A0B395F42ABDD3E500A80A69 /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
 		A0B395F52ABE1A5000A80A69 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D3623B7C2AD5060400A323F8 /* output.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = output.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				A006FE322AC2C8E700795770 /* main.swift */,
+				D3623B7C2AD5060400A323F8 /* output.txt */,
 			);
 			path = lab2;
 			sourceTree = "<group>";
