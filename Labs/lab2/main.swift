@@ -74,7 +74,7 @@ struct Regex {
         }
     }
     
-    enum Terminal: Equatable, Hashable {
+    enum Terminal: Equatable, Hashable, Comparable {
         
         case epsilon
         case emptySet
@@ -267,8 +267,10 @@ class Node: Equatable, Hashable {
                     setNode(node: right)
                     
                 case .union:
-                    if left == right {
+                    if left == right || (right == left.left || right == left.right) && left.value == .operation(.union) {
                         setup(as: left)
+                    } else if (left == right.left || left == right.right) && right.value == .operation(.union) {
+                        setup(as: right)
                     } else {
                         setNode(node: left)
                         setNode(node: right)
@@ -561,11 +563,14 @@ struct FSM {
         self.terminals = tree.terminals
         self.initialState = .init(id: 0, regex: tree.root)
         self.states.append(initialState)
+        if tree.root.hasEmptyString() {
+            finalStates.append(initialState)
+        }
         setup(by: tree, from: initialState)
     }
     
     mutating private func setup(by tree: Tree, from state: State) {
-        for terminal in terminals {
+        for terminal in terminals.sorted() {
             let derivative = tree.derivative(by: terminal)
             guard derivative.root.value != .terminal(.emptySet) else {
                 continue
@@ -589,7 +594,8 @@ struct FSM {
     func debug() {
         for state in states.sorted(by: { $0.id < $1.id }) {
             if state == initialState {
-                print("q\(state.id) = \(state.regex.toRegex()) - initial")
+                let isFinal = finalStates.contains(state)
+                print("q\(state.id) = \(state.regex.toRegex()) - initial\(isFinal ? ", final" : "")")
             } else {
                 let isFinal = finalStates.contains(state)
                 print("q\(state.id) = \(state.regex.toRegex())\(isFinal ? " - final" : "")")
@@ -645,7 +651,7 @@ struct FSM {
     }
     
     mutating private func makeNewInitialState() {
-        let newInitialState = State(id: -1, regex: Node(value: .terminal(.epsilon)))
+        let newInitialState = State(id: -1, regex: Node(value: .terminal(.emptySet)))
         let newTransition = Transition(from: newInitialState, to: initialState, by: Node(value: .terminal(.epsilon)))
         transitions.append(newTransition)
         initialState = newInitialState
@@ -655,7 +661,7 @@ struct FSM {
         guard finalStates.count > 0 else {
             fatalError("no final states")
         }
-        let newFinalState = State(id: states.count, regex: Node(value: .terminal(.epsilon)))
+        let newFinalState = State(id: states.count, regex: Node(value: .terminal(.emptySet)))
         for finalState in finalStates {
             let newTransition = Transition(from: finalState, to: newFinalState, by: Node(value: .terminal(.epsilon)))
             transitions.append(newTransition)
@@ -680,7 +686,7 @@ struct FSM {
 
 // MARK: - MAIN
 
-let regex = Regex(string: "(((((c*)*)*)&a)*)")
+let regex = Regex(string: "(((((b*)*)*)#(a*))*)")
 
 let tree = Tree(regex: regex)
 
