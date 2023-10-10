@@ -3,25 +3,25 @@ import Foundation
 // MARK: - Extensions
 
 extension Character {
-    
+
     func formatted() -> Regex.Symbol {
         switch self {
         case "(": return .openBracket
         case ")": return .closeBracket
-        case "*": return .iteration
-        case "&": return .concat
-        case "|": return .union
-        case "#": return .shuffle
-        case "e": return .epsilon
-        case "0": return .emptySet
-        case "a"..."z": return .letter(self)
+        case "*": return .operation(.iteration)
+        case "&": return .operation(.concat)
+        case "|": return .operation(.union)
+        case "#": return .operation(.shuffle)
+        case "e": return .terminal(.epsilon)
+        case "0": return .terminal(.emptySet)
+        case "a"..."z": return .terminal(.letter(self))
         default: return .unexpected
         }
     }
 }
 
 extension Array where Element == Transition {
-    func union() -> Element? {
+    func union() -> Transition? {
         guard let first else {
             return nil
         }
@@ -34,20 +34,42 @@ extension Array where Element == Transition {
     }
 }
 
+extension Node: Equatable, Hashable {
+
+    static func == (lhs: Node, rhs: Node) -> Bool {
+        return lhs.value == rhs.value && lhs.left == rhs.left && lhs.right == rhs.right
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(value)
+        hasher.combine(parent)
+        hasher.combine(left)
+        hasher.combine(right)
+    }
+}
+
+extension State: Equatable {
+
+    static func ==(lhs: State, rhs: State) -> Bool {
+        return lhs.regex == rhs.regex
+    }
+}
+
 // MARK: - Stack
 
 struct Stack<Element> {
-    
+
     private var items: [Element] = []
-    
+
     mutating func push(_ item: Element) {
         items.append(item)
     }
-    
+
+    @discardableResult
     mutating func pop() -> Element {
         return items.removeLast()
     }
-    
+
     func top() -> Element? {
         return items.last
     }
@@ -56,14 +78,14 @@ struct Stack<Element> {
 // MARK: - Regex
 
 struct Regex {
-    
+
     enum Operation: Equatable, Hashable {
-        
+
         case union
         case concat
         case iteration
         case shuffle
-        
+
         var value: Character {
             switch self {
             case .union: return "|"
@@ -73,13 +95,13 @@ struct Regex {
             }
         }
     }
-    
+
     enum Terminal: Equatable, Hashable, Comparable {
-        
+
         case epsilon
         case emptySet
         case letter(Character)
-        
+
         var value: Character {
             switch self {
             case .epsilon: return "e"
@@ -88,68 +110,42 @@ struct Regex {
             }
         }
     }
-    
+
     enum Symbol: Equatable {
-        
+
         case openBracket
         case closeBracket
-        case iteration
-        case concat
-        case union
-        case shuffle
-        case epsilon
-        case emptySet
-        case letter(Character)
+        case terminal(Terminal)
+        case operation(Operation)
         case unexpected
-        
-        var priority: Int {
-            switch self {
-            case .union: return 1
-            case .shuffle: return 2
-            case .concat: return 3
-            case .iteration: return 4
-            default: return 0
-            }
-        }
     }
-    
+
     var symbols: [Symbol] = []
     var terminals = Set<Terminal>()
-    
+
     init(string: String) {
         setup(from: string)
     }
-    
-    mutating private func setup(from string: String) {
+
+    private mutating func setup(from string: String) {
         let array: [Character] = string.split(separator: "").map { Character(String($0)) }
-        
+
         for symbol in array {
-            switch symbol.formatted() {
-            case .letter(let char):
-                terminals.insert(.letter(char))
-            case .unexpected:
+            let formatted = symbol.formatted()
+            guard formatted != .unexpected else {
                 fatalError("Unexpected symbol: \(symbol)")
-            default:
-                break
             }
-            symbols.append(symbol.formatted())
+            if case .terminal(let terminal) = formatted {
+                terminals.insert(terminal)
+            }
+            symbols.append(formatted)
         }
     }
 }
 
 // MARK: - Node
 
-class Node: Equatable, Hashable {
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(value)
-        hasher.combine(parent)
-        hasher.combine(left)
-        hasher.combine(right)
-    }
-    
-    static func == (lhs: Node, rhs: Node) -> Bool {
-        return lhs.value == rhs.value && lhs.left == rhs.left && lhs.right == rhs.right
-    }
+class Node {
     
     enum Value: Equatable, Hashable {
         
@@ -166,34 +162,23 @@ class Node: Equatable, Hashable {
         self.value = value
     }
     
-    private func setup(as node: Node) {
-        let newNode = node
-        newNode.left?.parent = self
-        newNode.right?.parent = self
-        self.left = newNode.left
-        self.right = newNode.right
-        self.value = newNode.value
-    }
-    
     func setNode(node: Node) {
-        switch node.value {
+        if
+            case .terminal(let terminal) = node.value,
+            terminal == .epsilon || terminal == .emptySet,
+            self.value == .operation(.iteration)
+        {
+            self.value = .terminal(terminal)
             
-        case .terminal(let terminal):
-            if (terminal == .epsilon || terminal == .emptySet) && value == .operation(.iteration) {
-                value = .terminal(terminal)
-                return
-            }
-            
-        default:
-            break
-        }
-        
-        let newNode = node
-        newNode.parent = self
-        if left != nil {
-            self.right = newNode
         } else {
-            self.left = newNode
+
+            let newNode = node
+            newNode.parent = self
+            if left != nil {
+                self.right = newNode
+            } else {
+                self.left = newNode
+            }
         }
     }
     
@@ -283,7 +268,7 @@ class Node: Equatable, Hashable {
         }
     }
     
-    func hasEmptyString() -> Bool {
+    func hasEmptyWord() -> Bool {
         switch value {
             
         case .terminal(let terminal):
@@ -296,13 +281,13 @@ class Node: Equatable, Hashable {
                 guard let left, let right else {
                     return false
                 }
-                return left.hasEmptyString() || right.hasEmptyString()
+                return left.hasEmptyWord() || right.hasEmptyWord()
                 
             case .concat, .shuffle:
                 guard let left, let right else {
                     return false
                 }
-                return left.hasEmptyString() && right.hasEmptyString()
+                return left.hasEmptyWord() && right.hasEmptyWord()
                 
             case .iteration:
                 return true
@@ -343,7 +328,7 @@ class Node: Equatable, Hashable {
                 let rightNode = Node(value: .operation(.concat))
                 
                 leftNode.setChilds(left: left.derivative(by: letter), right: right)
-                if left.hasEmptyString() {
+                if left.hasEmptyWord() {
                     rightNode.setChilds(
                         left: .init(value: .terminal(.epsilon)),
                         right: right.derivative(by: letter)
@@ -386,10 +371,13 @@ class Node: Equatable, Hashable {
     
     func toRegex() -> String {
         switch value {
+            
         case .terminal(let terminal):
             return String(terminal.value)
+            
         case .operation(let operation):
             switch operation {
+                
             case .union, .concat, .shuffle:
                 guard let left, let right else {
                     return ""
@@ -397,6 +385,7 @@ class Node: Equatable, Hashable {
                 let leftRegex = left.toRegex()
                 let rightRegex = right.toRegex()
                 return "(\(leftRegex)\(operation.value)\(rightRegex))"
+                
             case .iteration:
                 guard let left else {
                     return ""
@@ -405,6 +394,15 @@ class Node: Equatable, Hashable {
                 return "(\(regex)\(operation.value))"
             }
         }
+    }
+    
+    private func setup(as node: Node) {
+        let newNode = node
+        newNode.left?.parent = self
+        newNode.right?.parent = self
+        self.left = newNode.left
+        self.right = newNode.right
+        self.value = newNode.value
     }
 }
 
@@ -424,77 +422,6 @@ class Tree {
         self.root = Self.setup(with: symbols)
     }
     
-    static private func setup(with array: [Regex.Symbol]) -> Node {
-        var symbolsStack = Stack<Regex.Symbol>()
-        var nodesStack = Stack<Node>()
-        
-        let perform: () -> Void = {
-            let poped = symbolsStack.pop()
-            switch poped {
-                
-            case .iteration:
-                let node = nodesStack.pop()
-                let newNode = Node(value: .operation(.iteration))
-                
-                newNode.setNode(node: node)
-                nodesStack.push(newNode)
-                
-            default:
-                let rightNode = nodesStack.pop()
-                let leftNode = nodesStack.pop()
-                
-                var newNode: Node
-                if poped == .concat {
-                    newNode = Node(value: .operation(.concat))
-                } else if poped == .union {
-                    newNode = Node(value: .operation(.union))
-                } else {
-                    newNode = Node(value: .operation(.shuffle))
-                }
-                
-                newNode.setChilds(left: leftNode, right: rightNode)
-                nodesStack.push(newNode)
-            }
-        }
-        
-        for sym in array {
-            switch sym {
-                
-            case .openBracket:
-                symbolsStack.push(sym)
-                
-            case .closeBracket:
-                while symbolsStack.top() != nil && symbolsStack.top()! != .openBracket {
-                    perform()
-                }
-                let _ = symbolsStack.pop()
-                
-            case .letter(let char):
-                let newNode = Node(value: .terminal(.letter(char)))
-                nodesStack.push(newNode)
-                
-            case .unexpected:
-                continue
-                
-            default:
-                while symbolsStack.top() != nil && symbolsStack.top()!.priority >= sym.priority {
-                    perform()
-                }
-                symbolsStack.push(sym)
-            }
-        }
-        
-        while symbolsStack.top() != nil {
-            perform()
-        }
-        
-        let root = nodesStack.pop()
-        guard nodesStack.top() == nil else {
-            fatalError("Stack is not empty")
-        }
-        return root
-    }
-    
     func addNode(node: Node) {
         let newNode = Node(value: .operation(.union))
         newNode.setChilds(left: root, right: node)
@@ -511,19 +438,77 @@ class Tree {
     }
     
     func hasEmptyWord() -> Bool {
-        return root.hasEmptyString()
+        return root.hasEmptyWord()
+    }
+    
+    static private func setup(with array: [Regex.Symbol]) -> Node {
+        var symbolsStack = Stack<Regex.Symbol>()
+        var nodesStack = Stack<Node>()
+        
+        let perform: () -> Void = {
+            let poped = symbolsStack.pop()
+            switch poped {
+                
+            case .operation(.iteration):
+                let node = nodesStack.pop()
+                let newNode = Node(value: .operation(.iteration))
+                
+                newNode.setNode(node: node)
+                nodesStack.push(newNode)
+                
+            default:
+                let rightNode = nodesStack.pop()
+                let leftNode = nodesStack.pop()
+                
+                var newNode: Node
+                if poped == .operation(.concat) {
+                    newNode = Node(value: .operation(.concat))
+                } else if poped == .operation(.union) {
+                    newNode = Node(value: .operation(.union))
+                } else {
+                    newNode = Node(value: .operation(.shuffle))
+                }
+                
+                newNode.setChilds(left: leftNode, right: rightNode)
+                nodesStack.push(newNode)
+            }
+        }
+        
+        for sym in array {
+            switch sym {
+                
+            case .closeBracket:
+                while symbolsStack.top() != nil && symbolsStack.top()! != .openBracket {
+                    perform()
+                }
+                symbolsStack.pop()
+                
+            case .terminal(.letter(let char)):
+                let newNode = Node(value: .terminal(.letter(char)))
+                nodesStack.push(newNode)
+                
+            default:
+                symbolsStack.push(sym)
+            }
+        }
+        
+        while symbolsStack.top() != nil {
+            perform()
+        }
+        
+        let root = nodesStack.pop()
+        guard nodesStack.top() == nil else {
+            fatalError("Stack is not empty")
+        }
+        return root
     }
 }
 
 // MARK: - FSM State
 
-struct State: Equatable {
+struct State {
     let id: Int
     let regex: Node
-    
-    static func ==(lhs: State, rhs: State) -> Bool {
-        return lhs.regex == rhs.regex
-    }
 }
 
 // MARK: - FSM Transition
@@ -545,41 +530,19 @@ struct Transition: Equatable {
 
 struct FSM {
     var states = [State]()
-    var terminals: Set<Regex.Terminal>
+    var terminals: [Regex.Terminal]
     var transitions = [Transition]()
     var initialState: State
     var finalStates = [State]()
     
     init(tree: Tree) {
-        self.terminals = tree.terminals
+        self.terminals = tree.terminals.sorted()
         self.initialState = .init(id: 0, regex: tree.root)
         self.states.append(initialState)
-        if tree.root.hasEmptyString() {
+        if tree.root.hasEmptyWord() {
             finalStates.append(initialState)
         }
         setup(by: tree, from: initialState)
-    }
-    
-    mutating private func setup(by tree: Tree, from state: State) {
-        for terminal in terminals.sorted() {
-            let derivative = tree.derivative(by: terminal)
-            guard derivative.root.value != .terminal(.emptySet) else {
-                continue
-            }
-            let newState = State(id: states.count, regex: derivative.root)
-            var newTransition: Transition
-            if let existState = states.first(where: { $0 == newState }) {
-                newTransition = .init(from: state, to: existState, by: Node(value: .terminal(terminal)))
-            } else {
-                states.append(newState)
-                if derivative.hasEmptyWord() {
-                    finalStates.append(newState)
-                }
-                newTransition = .init(from: state, to: newState, by: Node(value: .terminal(terminal)))
-                setup(by: derivative, from: newState)
-            }
-            transitions.append(newTransition)
-        }
     }
     
     func debug() {
@@ -611,7 +574,29 @@ struct FSM {
         return union.by.toRegex()
     }
     
-    mutating private func eliminateStates() {
+    private mutating func setup(by tree: Tree, from state: State) {
+        for terminal in terminals {
+            let derivative = tree.derivative(by: terminal)
+            guard derivative.root.value != .terminal(.emptySet) else {
+                continue
+            }
+            let newState = State(id: states.count, regex: derivative.root)
+            var newTransition: Transition
+            if let existState = states.first(where: { $0 == newState }) {
+                newTransition = .init(from: state, to: existState, by: Node(value: .terminal(terminal)))
+            } else {
+                states.append(newState)
+                if derivative.hasEmptyWord() {
+                    finalStates.append(newState)
+                }
+                newTransition = .init(from: state, to: newState, by: Node(value: .terminal(terminal)))
+                setup(by: derivative, from: newState)
+            }
+            transitions.append(newTransition)
+        }
+    }
+    
+    private mutating func eliminateStates() {
         while states.count != 0 {
             let state = states.removeFirst()
             
@@ -641,14 +626,14 @@ struct FSM {
         }
     }
     
-    mutating private func makeNewInitialState() {
+    private mutating func makeNewInitialState() {
         let newInitialState = State(id: -1, regex: Node(value: .terminal(.emptySet)))
         let newTransition = Transition(from: newInitialState, to: initialState, by: Node(value: .terminal(.epsilon)))
         transitions.append(newTransition)
         initialState = newInitialState
     }
     
-    mutating private func makeNewFinalState() {
+    private mutating func makeNewFinalState() {
         guard finalStates.count > 0 else {
             fatalError("no final states")
         }
@@ -661,21 +646,7 @@ struct FSM {
     }
 }
 
-func readFromFile() -> [String] {
-    let fileName = "output.txt"
-    guard let text = try? String(contentsOfFile: fileName) else {
-        return []
-    }
-    let split = text.split(separator: "\n")
-    var res: [String] = []
-    
-    for line in split {
-        let splitLine = line.components(separatedBy: CharacterSet(charactersIn: " ")).filter { !$0.isEmpty }
-        res.append(contentsOf: splitLine)
-    }
-    
-    return res
-}
+// MARK: - Transition JSON Model
 
 struct TransitionJSONModel: Encodable {
     let from: Int
@@ -694,6 +665,8 @@ struct TransitionJSONModel: Encodable {
         by = transition.by.toRegex()
     }
 }
+
+// MARK: - FSM JSON Model
 
 struct FSMJSONModel: Encodable {
     let initialState: Int
@@ -716,16 +689,36 @@ struct FSMJSONModel: Encodable {
     }
 }
 
-struct Response: Encodable {
+// MARK: - Response JSON Model
+
+struct ResponseJSON: Encodable {
     let input: String
     let output: String
     let fsm: FSMJSONModel
 }
 
+// MARK: - Help Functions
+
+func readFromFile() -> [String] {
+    let fileName = "output.txt"
+    guard let text = try? String(contentsOfFile: fileName) else {
+        return []
+    }
+    let split = text.split(separator: "\n")
+    var res: [String] = []
+    
+    for line in split {
+        let splitLine = line.components(separatedBy: CharacterSet(charactersIn: " ")).filter { !$0.isEmpty }
+        res.append(contentsOf: splitLine)
+    }
+    
+    return res
+}
+
 // MARK: - MAIN
 
 // x* = xx*|ε = xx∗|x∗ ?????
-var responses: [Response] = []
+var responses: [ResponseJSON] = []
 let regs = readFromFile()
 for reg in regs {
     let regex = Regex(string: reg)
@@ -733,7 +726,7 @@ for reg in regs {
     let fsm = FSM(tree: tree)
     var outputFSM = fsm
     let output = outputFSM.toRegex()
-    let response = Response(input: reg, output: output, fsm: .init(from: fsm))
+    let response = ResponseJSON(input: reg, output: output, fsm: .init(from: fsm))
     responses.append(response)
 }
 
