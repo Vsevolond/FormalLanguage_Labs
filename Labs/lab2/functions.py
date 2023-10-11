@@ -1,5 +1,6 @@
 import random
 import json
+import re
 from enum import Enum
 
 
@@ -199,3 +200,7 @@ def get_random_regex(alph_size=3, st_height=1, max_letters=3) -> TreeNode:
 
     regex = build_random_expression(true_max_letters)
     return regex
+
+
+def check_regex(regex: str, word: str) -> bool:
+    return True if re.fullmatch(regex, word) else False
