@@ -389,13 +389,21 @@ class Node {
         case .operation(let operation):
             switch operation {
 
-            case .union, .concat, .shuffle:
+            case .union, .shuffle:
                 guard let left, let right else {
                     return ""
                 }
                 let leftRegex = left.toRegex()
                 let rightRegex = right.toRegex()
                 return "(\(leftRegex)\(operation.value)\(rightRegex))"
+
+            case .concat:
+                guard let left, let right else {
+                    return ""
+                }
+                let leftRegex = left.toRegex()
+                let rightRegex = right.toRegex()
+                return "\(leftRegex)\(rightRegex)"
 
             case .iteration:
                 guard let left else {
