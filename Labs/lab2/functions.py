@@ -1,6 +1,7 @@
 import random
 import json
 import re
+from collections import deque
 from enum import Enum
 
 
@@ -202,7 +203,7 @@ def get_random_regex(alph_size=3, st_height=1, max_letters=3) -> TreeNode:
     return regex
 
 
-def get_possible_transitions(state: int, transtions: list[Transition]):
+def get_possible_transitions(state: int, transtions: list[Transition]) -> list[Transition]:
     possible_transitions = []
     for trans in transtions:
         if state == trans.from_state:
@@ -211,7 +212,7 @@ def get_possible_transitions(state: int, transtions: list[Transition]):
     return possible_transitions
 
 
-def generate_random_word(fsm: FSM, max_length: int):
+def generate_random_word(fsm: FSM, max_length: int) -> str:
     current_state = 0
     word = ""
     true_max_length = random.randint(1, max_length)
@@ -229,3 +230,48 @@ def generate_random_word(fsm: FSM, max_length: int):
 
 def check_regex(regex: str, word: str) -> bool:
     return True if re.fullmatch(regex, word) else False
+
+
+def check_fsm(fsm: FSM, word: str) -> bool:
+    if not word:
+        return fsm.initial_state in fsm.final_states
+    queue = deque()
+    visited = set()
+    current_state = fsm.initial_state
+
+    queue.append(current_state)
+
+    while queue:
+        current_state = queue.popleft()
+        visited.add(current_state)
+
+        if word:
+            for transition in fsm.transitions:
+                if transition.from_state == current_state and transition.by_symbol == word[0]:
+                    queue.append(transition.to_state)
+
+            word = word[1:]
+
+    if current_state in fsm.final_states and not word:
+        return True
+
+    return False
+
+
+def print_results(filename: str, max_len_word: int = 15):
+    check_result = True
+
+    for num, expr in enumerate(get_exprs(filename)):
+        print(f"{num} expression:")
+        print(expr)
+        word = generate_random_word(expr.fsm, max_len_word)
+        print("\tGenerated word: ", word)
+        inc_regex = check_regex(expr.output, word)
+        inc_fsm = check_fsm(expr.fsm, word)
+        print(f"\tIncluded in regex: {inc_regex}")
+        print(f"\tIncluded in fsm: {inc_fsm}")
+        if inc_regex != inc_fsm:
+            check_result = False
+        print(f"\tRESULT: {inc_regex == inc_fsm}\n")
+
+    print(f"Regex is equivalent to FSM: {check_result}")
