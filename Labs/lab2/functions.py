@@ -202,5 +202,30 @@ def get_random_regex(alph_size=3, st_height=1, max_letters=3) -> TreeNode:
     return regex
 
 
+def get_possible_transitions(state: int, transtions: list[Transition]):
+    possible_transitions = []
+    for trans in transtions:
+        if state == trans.from_state:
+            possible_transitions.append(trans)
+
+    return possible_transitions
+
+
+def generate_random_word(fsm: FSM, max_length: int):
+    current_state = 0
+    word = ""
+    true_max_length = random.randint(1, max_length)
+
+    for _ in range(true_max_length):
+        trans = get_possible_transitions(current_state, fsm.transitions)
+        if len(trans) == 0:
+            break
+        chosen_trans = random.choice(trans)
+        word += chosen_trans.by_symbol
+        current_state = chosen_trans.to_state
+
+    return word
+
+
 def check_regex(regex: str, word: str) -> bool:
     return True if re.fullmatch(regex, word) else False

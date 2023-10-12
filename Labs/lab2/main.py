@@ -46,6 +46,11 @@ def main():
                 max_letters=maximum_number_of_letters)) + '\n')
     # = = = = = = = = = = = = = = #
 
+    for expr in get_exprs("result.json"):
+        word = generate_random_word(expr.fsm, 15)
+        print("Generated word: ", word)
+        print(expr)
+
 
 if __name__ == "__main__":
     main()
