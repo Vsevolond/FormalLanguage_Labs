@@ -281,17 +281,16 @@ def check_fsm(fsm: FSM, word: str) -> bool:
         current_state = queue.popleft()
         visited.add(current_state)
 
-        if word:
+        if not word:
+            return current_state in fsm.final_states
+        else:
             if word[0] not in fsm.terminals:
                 return False
-            else:
-                for transition in fsm.transitions:
-                    if transition.from_state == current_state and transition.by_symbol == word[0]:
-                        queue.append(transition.to_state)
-                word = word[1:]
 
-    if current_state in fsm.final_states and not word:
-        return True
+            for transition in fsm.transitions:
+                if transition.from_state == current_state and transition.by_symbol == word[0]:
+                    queue.append(transition.to_state)
+            word = word[1:]
 
     return False
 
