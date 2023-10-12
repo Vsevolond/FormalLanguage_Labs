@@ -212,6 +212,40 @@ def get_possible_transitions(state: int, transtions: list[Transition]) -> list[T
     return possible_transitions
 
 
+def shuffle_word(word: str) -> str:
+    word = list(word)
+    random.shuffle(word)
+    return ''.join(word)
+
+
+def sample_word(word: str) -> str:
+    word = list(word)
+    len_word = random.randint(1, len(word))
+    return ''.join(random.sample(word, len_word))
+
+
+def random_actions(word: str, alphabet: [str]) -> str:
+    repeat = random.choice([1, 1, 1, 1, 1,
+                            2, 3, 4, 5, 6])
+    for _ in range(repeat):
+        chance = random.randint(1, 100)
+        if chance < 10:
+            word += chr(random.randint(ord('a'), ord('z')))
+        if 5 < chance < 15:
+            word = word[::-1]
+        if 10 < chance < 20:
+            word += random.choice(alphabet)
+        if 20 < chance < 50:
+            if len(word) > 2:
+                word = word[:-1]
+        if 45 < chance < 55:
+            word = sample_word(word)
+        if 58 < chance < 71:
+            word = shuffle_word(word)
+
+    return word
+
+
 def generate_random_word(fsm: FSM, max_length: int) -> str:
     current_state = 0
     word = ""
@@ -224,6 +258,8 @@ def generate_random_word(fsm: FSM, max_length: int) -> str:
         chosen_trans = random.choice(trans)
         word += chosen_trans.by_symbol
         current_state = chosen_trans.to_state
+
+    word = random_actions(word, fsm.terminals)
 
     return word
 
@@ -246,11 +282,13 @@ def check_fsm(fsm: FSM, word: str) -> bool:
         visited.add(current_state)
 
         if word:
-            for transition in fsm.transitions:
-                if transition.from_state == current_state and transition.by_symbol == word[0]:
-                    queue.append(transition.to_state)
-
-            word = word[1:]
+            if word[0] not in fsm.terminals:
+                return False
+            else:
+                for transition in fsm.transitions:
+                    if transition.from_state == current_state and transition.by_symbol == word[0]:
+                        queue.append(transition.to_state)
+                word = word[1:]
 
     if current_state in fsm.final_states and not word:
         return True
