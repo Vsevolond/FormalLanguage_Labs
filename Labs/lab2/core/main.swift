@@ -36,13 +36,32 @@ extension Array where Element == Transition {
         return transition
     }
 
-    func compact() -> [Transition] {
+    func compactByFrom() -> [Transition] {
         var dict: [Int: [Transition]] = [:]
         for transition in self {
             if dict[transition.from.id] == nil {
                 dict[transition.from.id] = [transition]
             } else {
                 dict[transition.from.id]?.append(transition)
+            }
+        }
+        var result: [Transition] = []
+        for (_, transitions) in dict {
+            guard let union = transitions.union() else {
+                continue
+            }
+            result.append(union)
+        }
+        return result
+    }
+
+    func compactByTo() -> [Transition] {
+        var dict: [Int: [Transition]] = [:]
+        for transition in self {
+            if dict[transition.to.id] == nil {
+                dict[transition.to.id] = [transition]
+            } else {
+                dict[transition.to.id]?.append(transition)
             }
         }
         var result: [Transition] = []
@@ -704,8 +723,8 @@ class FSM {
             let state = states.removeFirst()
 
             let iterationTransition = transitions.filter { $0.from == state && $0.from == $0.to }.union()
-            let toStateTransitions = transitions.filter { $0.to == state && $0.from != state }.compact()
-            let fromStateTransitions = transitions.filter { $0.from == state && $0.to != state }.compact()
+            let toStateTransitions = transitions.filter { $0.to == state && $0.from != state }.compactByFrom()
+            let fromStateTransitions = transitions.filter { $0.from == state && $0.to != state }.compactByTo()
 
             for toStateTransition in toStateTransitions {
                 for fromStateTransition in fromStateTransitions {
