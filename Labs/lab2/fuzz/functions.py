@@ -553,17 +553,19 @@ def check_fsm(fsm: FSM, word: str) -> bool:
     return False
 
 
-def print_results(filename: str, max_len_word: int = 15):
+def print_results(filename: str, output_filename: str, max_len_word: int = 15):
     """
-        Print the results of evaluating expressions from a file, comparing regex and FSM results.
+        Print the results of evaluating expressions from a file, comparing regex and FSM results,
+        and save them to an output file.
 
         Args:
             filename (str): The name of the file containing expressions to evaluate.
+            output_filename (str): The name of the file to which the results will be saved.
             max_len_word (int, optional): The maximum length of randomly generated words.
                                          Defaults to 15.
 
-        Prints:
-            - Evaluation results for each expression, including the expression itself,
+        Writes to Output File:
+            - Evaluation results for each expression, including the expression number,
               a generated word, and the comparison of the word with both regex and FSM.
             - A summary indicating whether regex is equivalent to FSM for all expressions.
 
@@ -572,19 +574,18 @@ def print_results(filename: str, max_len_word: int = 15):
     """
     results = []
 
-    for num, expr in enumerate(get_exprs(filename)):
-        print(f"{num} expression:")
-        print(expr)
-        generated_word = generate_random_word(expr.fsm, max_len_word)
-        print("\tGenerated word:", generated_word)
-        inc_regex = check_regex(expr.output, generated_word)
-        inc_fsm = check_fsm(expr.fsm, generated_word)
-        result = inc_regex == inc_fsm
-        results.append(result)
+    with open(output_filename, "w", encoding='utf-8') as file:
+        for num, expr in enumerate(get_exprs(filename)):
+            file.write(f"{num + 1} expression:\n")
+            generated_word = generate_random_word(expr.fsm, max_len_word)
+            file.write(f"\tGenerated word: {generated_word}\n")
+            inc_regex = check_regex(expr.output, generated_word)
+            inc_fsm = check_fsm(expr.fsm, generated_word)
+            result = inc_regex == inc_fsm
+            results.append(result)
+            file.write(f"\tIncluded in regex: {inc_regex}\n")
+            file.write(f"\tIncluded in fsm: {inc_fsm}\n")
+            file.write(f"\tRESULT: {result}\n\n")
 
-        print(f"\tIncluded in regex: {inc_regex}")
-        print(f"\tIncluded in fsm: {inc_fsm}")
-        print(f"\tRESULT: {result}\n")
-
-    check_result = all(results)
-    print(f"Regex is equivalent to FSM: {check_result}")
+        check_result = all(results)
+        file.write(f"Regex is equivalent to FSM: {check_result}")

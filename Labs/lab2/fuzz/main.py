@@ -11,13 +11,14 @@ def main():
         input_file = input("Enter the filename: ")
 
     output_file = sys.argv[2] if len(sys.argv) > 2 else "output.txt"
-    result_file = sys.argv[3] if len(sys.argv) > 3 else "result.json"
+    json_file = sys.argv[3] if len(sys.argv) > 3 else "result.json"
     # = = = = = = = = = = #
 
     # = CONSTANTS = #
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0
+    result_file = "RESULT.txt"
     # = = = = = = = #
 
     # = READING INPUT FILE = #
@@ -45,7 +46,7 @@ def main():
     # = = = = = = = = = = = = = = #
 
     # = CHECK EXPRESSIONS = #
-    print_results(result_file)
+    print_results(json_file, result_file)
     # = = = = = = = = = = = #
 
 
