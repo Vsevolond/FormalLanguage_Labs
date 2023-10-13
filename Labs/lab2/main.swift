@@ -154,6 +154,40 @@ struct Regex {
     }
 }
 
+// MARK: - Rules
+
+// e* -> e
+// 0* -> 0
+// 0r -> 0
+// r0 -> 0
+// 0#r -> 0
+// r#0 -> 0
+// 0|r -> r
+// r|0 -> r
+// er -> r
+// re -> r
+// e#r -> r
+// r#e -> r
+// e|e -> e
+// xx*|e -> x*
+// x*x|e -> x*
+// e|xx* -> x*
+// e|x*x -> x*
+// r*r* -> r*
+// r|r -> r
+// r1|(r1|r2) -> r1|r2
+// r1|(r2|r1) -> r2|r1
+// (r1|r2)|r1 -> (r1|r2)
+// (r2|r1)|r1 -> (r2|r1)
+// (r1|r2)|(r2|r1) -> (r1|r2)
+// (r2|r1)|(r1|r2) -> (r1|r2)
+
+// x...xx*|x* -> x* ????????????
+// xx*|x* -> x*
+// x*x|x* -> x*
+// x*|xx* -> x*
+// x*|x*x -> x*
+
 // MARK: - Node
 
 class Node {
@@ -174,15 +208,13 @@ class Node {
     }
 
     func setNode(node: Node) {
-        if
-            case .terminal(let terminal) = node.value,
-            terminal == .epsilon || terminal == .emptySet,
+        if case .terminal(let terminal) = node.value,
+            or(terminal == .epsilon, terminal == .emptySet),
             self.value == .operation(.iteration)
-        {
+        { // e* -> e, 0* -> 0
             self.value = .terminal(terminal)
 
         } else {
-
             let newNode = node
             newNode.parent = self
             if left != nil {
@@ -205,13 +237,14 @@ class Node {
             case .operation(let operation):
                 switch operation {
 
-                case .concat, .shuffle:
+                case .concat, .shuffle: // 0r -> 0, r0 -> 0, 0#r -> 0, r#0 -> 0
                     self.value = .terminal(.emptySet)
 
                 case .union:
-                    if left.value == value {
+                    if left.value == value { // r|0 -> r
                         setup(as: left)
-                    } else {
+
+                    } else { // 0|r -> r
                         setup(as: right)
                     }
 
@@ -230,15 +263,45 @@ class Node {
                 switch operation {
 
                 case .concat, .shuffle:
-                    if left.value == value {
+                    if left.value == value { // re -> r, r#e -> r
                         setup(as: left)
-                    } else {
+
+                    } else { // er -> r, e#r -> r
                         setup(as: right)
                     }
 
                 case .union:
-                    if value == .terminal(.epsilon) {
+                    if value == .terminal(.epsilon) { // e|e -> e
                         self.value = value
+
+                    } else if and(
+                        left.value == .operation(.concat),
+                        right.value == .terminal(.epsilon),
+                        or(
+                            and(left.right?.value == .operation(.iteration), left.left == left.right?.left),
+                            and(left.left?.value == .operation(.iteration), left.left?.left == left.right)
+                        )
+                    ) { // xx*|e -> x*, x*x|e -> x*
+                        if let iterationNode = left.right, iterationNode.value == .operation(.iteration) {
+                            setup(as: iterationNode)
+                        } else if let iterationNode = left.left, iterationNode.value == .operation(.iteration) {
+                            setup(as: iterationNode)
+                        }
+
+                    } else if and(
+                        left.value == .terminal(.epsilon),
+                        right.value == .operation(.concat),
+                        or(
+                            and(right.right?.value == .operation(.iteration), right.left == right.right?.left),
+                            and(right.left?.value == .operation(.iteration), right.left?.left == right.right)
+                        )
+                    ) { // e|xx* -> x*, e|x*x -> x*
+                        if let iterationNode = right.right, iterationNode.value == .operation(.iteration) {
+                            setup(as: iterationNode)
+                        } else if let iterationNode = right.left, iterationNode.value == .operation(.iteration) {
+                            setup(as: iterationNode)
+                        }
+
                     } else {
                         setNode(node: left)
                         setNode(node: right)
@@ -258,15 +321,47 @@ class Node {
             case .operation(let operation):
                 switch operation {
 
-                case .concat, .shuffle:
+                case .shuffle:
                     setNode(node: left)
                     setNode(node: right)
+                    
+                case .concat:
+                    if and(
+                        left.value == .operation(.iteration),
+                        right.value == .operation(.iteration),
+                        left.left == right.left
+                    ) { // r*r* -> r*
+                        setup(as: left)
+
+                    } else {
+                        setNode(node: left)
+                        setNode(node: right)
+                    }
 
                 case .union:
-                    if left == right || (right == left.left || right == left.right) && left.value == .operation(.union) {
+                    if left == right { // r|r -> r
                         setup(as: left)
-                    } else if (left == right.left || left == right.right) && right.value == .operation(.union) {
+
+                    } else if and(
+                        left.value == .operation(.union),
+                        right.value == .operation(.union),
+                        left.left == right.right,
+                        left.right == right.left
+                    ) { // (r1|r2)|(r2|r1) -> (r1|r2), (r2|r1)|(r1|r2) -> (r1|r2)
+                        setup(as: left)
+
+                    } else if and(
+                        right.value == .operation(.union),
+                        or(left == right.left,left == right.right)
+                    ) { // r1|(r1|r2) -> r1|r2, r1|(r2|r1) -> r2|r1
                         setup(as: right)
+
+                    } else if and(
+                        left.value == .operation(.union),
+                        or(right == left.left, right == left.right)
+                    ) { // (r1|r2)|r1 -> (r1|r2), (r2|r1)|r1 -> (r2|r1)
+                        setup(as: left)
+
                     } else {
                         setNode(node: left)
                         setNode(node: right)
@@ -762,6 +857,24 @@ func readFromFile() -> [String] {
     }
     
     return res
+}
+
+func and(_ components: Bool...) -> Bool {
+    for component in components {
+        if component == false {
+            return false
+        }
+    }
+    return true
+}
+
+func or(_ components: Bool...) -> Bool {
+    for component in components {
+        if component == true {
+            return true
+        }
+    }
+    return false
 }
 
 // MARK: - MAIN
