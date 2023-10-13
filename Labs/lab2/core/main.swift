@@ -42,7 +42,6 @@ extension Node: Equatable, Hashable {
 
     func hash(into hasher: inout Hasher) {
         hasher.combine(value)
-        hasher.combine(parent)
         hasher.combine(left)
         hasher.combine(right)
     }
@@ -154,40 +153,6 @@ struct Regex {
     }
 }
 
-// MARK: - Rules
-
-// e* -> e
-// 0* -> 0
-// 0r -> 0
-// r0 -> 0
-// 0#r -> 0
-// r#0 -> 0
-// 0|r -> r
-// r|0 -> r
-// er -> r
-// re -> r
-// e#r -> r
-// r#e -> r
-// e|e -> e
-// xx*|e -> x*
-// x*x|e -> x*
-// e|xx* -> x*
-// e|x*x -> x*
-// r*r* -> r*
-// r|r -> r
-// r1|(r1|r2) -> r1|r2
-// r1|(r2|r1) -> r2|r1
-// (r1|r2)|r1 -> (r1|r2)
-// (r2|r1)|r1 -> (r2|r1)
-// (r1|r2)|(r2|r1) -> (r1|r2)
-// (r2|r1)|(r1|r2) -> (r1|r2)
-
-// x...xx*|x* -> x* ????????????
-// xx*|x* -> x*
-// x*x|x* -> x*
-// x*|xx* -> x*
-// x*|x*x -> x*
-
 // MARK: - Node
 
 class Node {
@@ -199,7 +164,6 @@ class Node {
     }
 
     var value: Value
-    var parent: Node? = nil
     var left: Node? = nil
     var right: Node? = nil
 
@@ -216,7 +180,6 @@ class Node {
 
         } else {
             let newNode = node
-            newNode.parent = self
             if left != nil {
                 self.right = newNode
             } else {
@@ -532,8 +495,6 @@ class Node {
 
     private func setup(as node: Node) {
         let newNode = node
-        newNode.left?.parent = self
-        newNode.right?.parent = self
         self.left = newNode.left
         self.right = newNode.right
         self.value = newNode.value

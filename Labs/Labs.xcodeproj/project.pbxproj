@@ -63,7 +63,7 @@
 		A006FE312AC2C8E700795770 /* lab2 */ = {
 			isa = PBXGroup;
 			children = (
-				A006FE322AC2C8E700795770 /* main.swift */,
+				D34527082AD97CCD00F30A8A /* core */,
 			);
 			path = lab2;
 			sourceTree = "<group>";
@@ -95,6 +95,14 @@
 				A0B395F52ABE1A5000A80A69 /* README.md */,
 			);
 			path = lab1;
+			sourceTree = "<group>";
+		};
+		D34527082AD97CCD00F30A8A /* core */ = {
+			isa = PBXGroup;
+			children = (
+				A006FE322AC2C8E700795770 /* main.swift */,
+			);
+			path = core;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
