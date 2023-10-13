@@ -6,6 +6,15 @@ from enum import Enum
 
 
 class Operation(Enum):
+    """
+        Enumeration class representing operations used in constructing expression trees.
+
+        Operations:
+            - OR: Represents the logical OR operation (|)
+            - AND: Represents the logical AND operation (&)
+            - STAR: Represents the Kleene star operation (*)
+            - SHARP: Represents the shuffle operation (#)
+    """
     OR = "|"
     AND = "&"
     STAR = "*"
@@ -13,6 +22,15 @@ class Operation(Enum):
 
     @classmethod
     def get_random(cls, exclude=None):
+        """
+            Get a random operation from the available operations.
+
+            Args:
+                exclude (list, optional): A list of operations to exclude. Defaults to None.
+
+            Returns:
+                Operation: A randomly chosen operation.
+        """
         if exclude is None:
             exclude = []
 
@@ -24,6 +42,17 @@ class Operation(Enum):
 
     @classmethod
     def get_binary_operands(cls, by=""):
+        """
+            Returns a list of binary operands in either name or value format.
+
+            Args:
+                by (str, optional): The format in which operands are returned. Options: "name" or "value".
+                    Defaults to an empty string, which returns Operation objects.
+
+            Returns:
+                list: List of binary operands.
+
+        """
         if by == "name":
             binary_operands = [cls.AND.name, cls.OR.name, cls.SHARP.name]
         elif by == "value":
@@ -35,6 +64,16 @@ class Operation(Enum):
 
     @classmethod
     def get_unary_operands(cls, by=""):
+        """
+            Returns a list of unary operands in either name or value format.
+
+            Args:
+                by (str, optional): The format in which operands are returned. Options: "name" or "value".
+                    Defaults to an empty string, which returns Operation objects.
+
+            Returns:
+                list: List of unary operands.
+        """
         if by == "name":
             unary_operands = [cls.STAR.name]
         elif by == "value":
@@ -46,12 +85,36 @@ class Operation(Enum):
 
 
 class TreeNode:
+    """
+            Class representing a node in an expression tree.
+
+            Args:
+                value (str, optional): The value of the node. Defaults to an empty string.
+                left (TreeNode, optional): The left child node. Defaults to None.
+                right (TreeNode, optional): The right child node. Defaults to None.
+
+            Methods:
+                add_child(self, value=''): Adds a child node to the current node.
+                check_child(self, pos=0): Checks the child node at the specified position (0 for left, 1 for right).
+                __str__(self): Returns the infix expression of the tree.
+                display_tree(self, depth=0): Displays the tree structure with indentation.
+                infix_expression(self): Returns the infix expression of the subtree rooted at this node.
+        """
     def __init__(self, value='', left=None, right=None):
         self.value = value
         self.left = left
         self.right = right
 
     def add_child(self, value=''):
+        """
+                Adds a child node to the current node.
+
+                Args:
+                    value (str, optional): The value of the child node. Defaults to an empty string.
+
+                Returns:
+                    TreeNode: The added child node.
+                """
         new_child = TreeNode(value)
         if self.left is None:
             self.left = new_child
@@ -61,6 +124,15 @@ class TreeNode:
             return self.right
 
     def check_child(self, pos=0):
+        """
+                Checks the child node at the specified position (0 for left, 1 for right).
+
+                Args:
+                    pos (int, optional): The position to check (0 for left, 1 for right). Defaults to 0.
+
+                Returns:
+                    str: The value of the child node if it exists, or False if there is no child at the specified position.
+        """
         # 0 = left, 1 = right
         if pos == 0:
             if self.left:
@@ -75,6 +147,15 @@ class TreeNode:
         return self.infix_expression()
 
     def display_tree(self, depth=0):
+        """
+                Displays the tree structure with indentation.
+
+                Args:
+                    depth (int, optional): The depth of the current node in the tree. Defaults to 0.
+
+                Returns:
+                    str: The tree structure as a string with indentation.
+        """
         indent = '  ' * depth
         result = f'{indent}{self.value}\n'
         if self.left:
@@ -84,6 +165,12 @@ class TreeNode:
         return result
 
     def infix_expression(self):
+        """
+                Returns the infix expression of the subtree rooted at this node.
+
+                Returns:
+                    str: Infix expression of the subtree.
+        """
         if self.value in Operation.get_binary_operands(by="value"):
             left_expr = self.left.infix_expression()
             right_expr = self.right.infix_expression()
@@ -96,18 +183,50 @@ class TreeNode:
 
 
 class Transition:
+    """
+        Class representing a state transition in a finite state machine (FSM).
+
+        Args:
+            from_state (int): The starting state of the transition.
+            to_state (int): The ending state of the transition.
+            by_symbol (str): The symbol used to perform the transition.
+
+        Methods:
+            edit_from(self, new_from): Update the starting state.
+            edit_to(self, new_to): Update the ending state.
+            edit_by(self, new_by): Update the transition symbol.
+            __str__(self): Return a string representation of the transition.
+        """
     def __init__(self, from_state: int, to_state: int, by_symbol: str):
         self.from_state = from_state
         self.to_state = to_state
         self.by_symbol = by_symbol
 
     def edit_from(self, new_from):
+        """
+                Update the starting state of the transition.
+
+                Args:
+                    new_from (int): The new starting state.
+        """
         self.from_state = new_from
 
     def edit_to(self, new_to):
+        """
+                Update the ending state of the transition.
+
+                Args:
+                    new_to (int): The new ending state.
+        """
         self.to_state = new_to
 
     def edit_by(self, new_by):
+        """
+                Update the transition symbol.
+
+                Args:
+                    new_by (str): The new transition symbol.
+        """
         self.by_symbol = new_by
 
     def __str__(self):
@@ -115,6 +234,19 @@ class Transition:
 
 
 class FSM:
+    """
+        Class representing a Finite State Machine (FSM).
+
+        Args:
+            initial_state (set): The set of initial states in the FSM.
+            states (set): The set of all states in the FSM.
+            final_states (set): The set of final/accepting states in the FSM.
+            transitions (list of transitions): A list of state transitions in the FSM.
+            terminals (list of str): A list of terminal symbols used in the FSM.
+
+        Methods:
+            __str__(self): Return a string representation of the FSM.
+        """
     def __init__(self, initial_state: set, states: set, final_states: set,
                  transitions: [Transition], terminals: [str]):
         self.initial_state = initial_state
@@ -134,6 +266,17 @@ class FSM:
 
 
 class Expression:
+    """
+        Class representing an expression along with a Finite State Machine (FSM) definition.
+
+        Args:
+            input (str): The input regular expression string.
+            output (str): The output regular expression string.
+            fsm: A dictionary containing the FSM attributes, which is used to represent the FSM.
+
+        Methods:
+            __str__(self): Return a string representation of the Expression.
+    """
     def __init__(self, input: str, output: str, fsm: dict):
         self.input = input
         self.output = output
