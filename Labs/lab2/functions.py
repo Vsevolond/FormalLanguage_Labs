@@ -86,20 +86,21 @@ class Operation(Enum):
 
 class TreeNode:
     """
-            Class representing a node in an expression tree.
+        Class representing a node in an expression tree.
 
-            Args:
-                value (str, optional): The value of the node. Defaults to an empty string.
-                left (TreeNode, optional): The left child node. Defaults to None.
-                right (TreeNode, optional): The right child node. Defaults to None.
+        Args:
+            value (str, optional): The value of the node. Defaults to an empty string.
+            left (TreeNode, optional): The left child node. Defaults to None.
+            right (TreeNode, optional): The right child node. Defaults to None.
 
-            Methods:
-                add_child(self, value=''): Adds a child node to the current node.
-                check_child(self, pos=0): Checks the child node at the specified position (0 for left, 1 for right).
-                __str__(self): Returns the infix expression of the tree.
-                display_tree(self, depth=0): Displays the tree structure with indentation.
-                infix_expression(self): Returns the infix expression of the subtree rooted at this node.
-        """
+        Methods:
+            add_child(self, value=''): Adds a child node to the current node.
+            check_child(self, pos=0): Checks the child node at the specified position (0 for left, 1 for right).
+            __str__(self): Returns the infix expression of the tree.
+            display_tree(self, depth=0): Displays the tree structure with indentation.
+            infix_expression(self): Returns the infix expression of the subtree rooted at this node.
+    """
+
     def __init__(self, value='', left=None, right=None):
         self.value = value
         self.left = left
@@ -107,14 +108,14 @@ class TreeNode:
 
     def add_child(self, value=''):
         """
-                Adds a child node to the current node.
+            Adds a child node to the current node.
 
-                Args:
-                    value (str, optional): The value of the child node. Defaults to an empty string.
+            Args:
+                value (str, optional): The value of the child node. Defaults to an empty string.
 
-                Returns:
-                    TreeNode: The added child node.
-                """
+            Returns:
+                TreeNode: The added child node.
+        """
         new_child = TreeNode(value)
         if self.left is None:
             self.left = new_child
@@ -125,13 +126,13 @@ class TreeNode:
 
     def check_child(self, pos=0):
         """
-                Checks the child node at the specified position (0 for left, 1 for right).
+            Checks the child node at the specified position (0 for left, 1 for right).
 
-                Args:
-                    pos (int, optional): The position to check (0 for left, 1 for right). Defaults to 0.
+            Args:
+                pos (int, optional): The position to check (0 for left, 1 for right). Defaults to 0.
 
-                Returns:
-                    str: The value of the child node if it exists, or False if there is no child at the specified position.
+            Returns:
+                str: The value of the child node if it exists, or False if there is no child at the specified position.
         """
         # 0 = left, 1 = right
         if pos == 0:
@@ -148,13 +149,13 @@ class TreeNode:
 
     def display_tree(self, depth=0):
         """
-                Displays the tree structure with indentation.
+            Displays the tree structure with indentation.
 
-                Args:
-                    depth (int, optional): The depth of the current node in the tree. Defaults to 0.
+            Args:
+                depth (int, optional): The depth of the current node in the tree. Defaults to 0.
 
-                Returns:
-                    str: The tree structure as a string with indentation.
+            Returns:
+                str: The tree structure as a string with indentation.
         """
         indent = '  ' * depth
         result = f'{indent}{self.value}\n'
@@ -166,10 +167,10 @@ class TreeNode:
 
     def infix_expression(self):
         """
-                Returns the infix expression of the subtree rooted at this node.
+            Returns the infix expression of the subtree rooted at this node.
 
-                Returns:
-                    str: Infix expression of the subtree.
+            Returns:
+                str: Infix expression of the subtree.
         """
         if self.value in Operation.get_binary_operands(by="value"):
             left_expr = self.left.infix_expression()
@@ -196,7 +197,8 @@ class Transition:
             edit_to(self, new_to): Update the ending state.
             edit_by(self, new_by): Update the transition symbol.
             __str__(self): Return a string representation of the transition.
-        """
+    """
+
     def __init__(self, from_state: int, to_state: int, by_symbol: str):
         self.from_state = from_state
         self.to_state = to_state
@@ -204,28 +206,28 @@ class Transition:
 
     def edit_from(self, new_from):
         """
-                Update the starting state of the transition.
+            Update the starting state of the transition.
 
-                Args:
-                    new_from (int): The new starting state.
+            Args:
+                new_from (int): The new starting state.
         """
         self.from_state = new_from
 
     def edit_to(self, new_to):
         """
-                Update the ending state of the transition.
+            Update the ending state of the transition.
 
-                Args:
-                    new_to (int): The new ending state.
+            Args:
+                new_to (int): The new ending state.
         """
         self.to_state = new_to
 
     def edit_by(self, new_by):
         """
-                Update the transition symbol.
+            Update the transition symbol.
 
-                Args:
-                    new_by (str): The new transition symbol.
+            Args:
+                new_by (str): The new transition symbol.
         """
         self.by_symbol = new_by
 
@@ -246,7 +248,8 @@ class FSM:
 
         Methods:
             __str__(self): Return a string representation of the FSM.
-        """
+    """
+
     def __init__(self, initial_state: set, states: set, final_states: set,
                  transitions: [Transition], terminals: [str]):
         self.initial_state = initial_state
@@ -277,6 +280,7 @@ class Expression:
         Methods:
             __str__(self): Return a string representation of the Expression.
     """
+
     def __init__(self, input: str, output: str, fsm: dict):
         self.input = input
         self.output = output
@@ -291,25 +295,68 @@ class Expression:
         return result
 
 
-def get_exprs(filename: str):
+def get_exprs(filename: str) -> list[Expression]:
+    """
+        Retrieve a list of Expression objects from a JSON file.
+
+        Args:
+            filename (str): The name of the JSON file containing expression definitions.
+
+        Returns:
+            list[Expression]: A list of Expression objects created from the JSON file.
+    """
     exprs = []
     for regex in parse_json(filename):
         exprs.append(Expression(**regex))
     return exprs
 
 
-def get_alphabet(size=1) -> list:
+def get_alphabet(size: int = 1) -> list[str]:
+    """
+        Generate an alphabet as a list of strings.
+
+        Args:
+            size (int, optional): The size of the alphabet to generate. Defaults to 1.
+
+        Returns:
+            list[str]: A list of alphabet characters.
+    """
     alphabet = [chr(ord('a') + i) for i in range(size)]
     return alphabet
 
 
-def parse_json(filename):
+def parse_json(filename: str) -> dict:
+    """
+        Parse a JSON file and return its contents.
+
+        Args:
+            filename (str): The path to the JSON file to be parsed.
+
+        Returns:
+            dict: A dictionary representing the contents of the JSON file.)
+    """
     with open(filename, 'r') as file:
         result = json.load(file)
     return result
 
 
-def get_random_regex(alph_size=3, st_height=1, max_letters=3) -> TreeNode:
+def get_random_regex(alph_size: int = 3,
+                     st_height: int = 1,
+                     max_letters: int = 3) -> TreeNode:
+    """
+        Generate a random regular expression represented as a TreeNode.
+
+        This function generates a random regular expression using a binary tree structure
+        where each node represents an operation or a character from the alphabet.
+
+        Args:
+            alph_size (int): The size of the alphabet used for character nodes (default is 3).
+            st_height (int): The maximum height of the regular expression tree (default is 1).
+            max_letters (int): The maximum number of alphabet characters in the regular expression (default is 3).
+
+        Returns:
+            TreeNode: A TreeNode representing the generated regular expression.
+    """
     alphabet = get_alphabet(alph_size)
     true_max_letters = random.randint(1, max_letters)
 
@@ -346,9 +393,19 @@ def get_random_regex(alph_size=3, st_height=1, max_letters=3) -> TreeNode:
     return regex
 
 
-def get_possible_transitions(state: int, transtions: list[Transition]) -> list[Transition]:
+def get_possible_transitions(state: int, transitions: list[Transition]) -> list[Transition]:
+    """
+        Get a list of possible transitions originating from a specific state in a finite state machine.
+
+        Args:
+            state (int): The source state for which transitions are to be retrieved.
+            transitions (list[Transition]): A list of Transition objects representing transitions in the FSM.
+
+        Returns:
+            list[Transition]: A list of Transition objects originating from the given state.
+    """
     possible_transitions = []
-    for trans in transtions:
+    for trans in transitions:
         if state == trans.from_state:
             possible_transitions.append(trans)
 
@@ -356,18 +413,46 @@ def get_possible_transitions(state: int, transtions: list[Transition]) -> list[T
 
 
 def shuffle_word(word: str) -> str:
+    """
+        Shuffle the characters in a word randomly.
+
+        Args:
+            word (str): The word to shuffle.
+
+        Returns:
+            str: The shuffled word.
+    """
     word = list(word)
     random.shuffle(word)
     return ''.join(word)
 
 
 def sample_word(word: str) -> str:
+    """
+        Sample a word by randomly selecting a subset of its characters.
+
+        Args:
+            word (str): The input word.
+
+        Returns:
+            str: A new word created by randomly selecting a subset of characters from the input word.
+    """
     word = list(word)
     len_word = random.randint(1, len(word))
     return ''.join(random.sample(word, len_word))
 
 
 def random_actions(word: str, alphabet: [str]) -> str:
+    """
+        Perform random actions on a word to modify it.
+
+        Args:
+            word (str): The input word to be modified.
+            alphabet (List[str]): A list of characters to choose from when making modifications.
+
+        Returns:
+            str: The word after applying random modifications.
+    """
     repeat = random.choice([1, 1, 1, 1, 1,
                             2, 3, 4, 5, 6])
     for _ in range(repeat):
@@ -390,6 +475,16 @@ def random_actions(word: str, alphabet: [str]) -> str:
 
 
 def generate_random_word(fsm: FSM, max_length: int) -> str:
+    """
+        Generate a random word using a Finite State Machine (FSM).
+
+        Args:
+            fsm (FSM): The Finite State Machine to use for generating the word.
+            max_length (int): The maximum length of the generated word.
+
+        Returns:
+            str: The randomly generated word.
+    """
     current_state = 0
     word = ""
     true_max_length = random.randint(1, max_length)
@@ -408,10 +503,30 @@ def generate_random_word(fsm: FSM, max_length: int) -> str:
 
 
 def check_regex(regex: str, word: str) -> bool:
+    """
+        Check if a word matches a regular expression pattern.
+
+        Args:
+            regex (str): The regular expression pattern to check against.
+            word (str): The word to be checked for matching the regular expression.
+
+        Returns:
+            bool: True if the word matches the regular expression, False otherwise.
+    """
     return True if re.fullmatch(regex, word) else False
 
 
 def check_fsm(fsm: FSM, word: str) -> bool:
+    """
+        Check if a given word is recognized by a Finite State Machine (FSM).
+
+        Args:
+            fsm (FSM): The Finite State Machine to check against.
+            word (str): The word to be checked for acceptance by the FSM.
+
+        Returns:
+            bool: True if the FSM accepts the word, False if not.
+    """
     if not word:
         return fsm.initial_state in fsm.final_states
     queue = deque()
@@ -439,19 +554,37 @@ def check_fsm(fsm: FSM, word: str) -> bool:
 
 
 def print_results(filename: str, max_len_word: int = 15):
-    check_result = True
+    """
+        Print the results of evaluating expressions from a file, comparing regex and FSM results.
+
+        Args:
+            filename (str): The name of the file containing expressions to evaluate.
+            max_len_word (int, optional): The maximum length of randomly generated words.
+                                         Defaults to 15.
+
+        Prints:
+            - Evaluation results for each expression, including the expression itself,
+              a generated word, and the comparison of the word with both regex and FSM.
+            - A summary indicating whether regex is equivalent to FSM for all expressions.
+
+        Returns:
+            None
+    """
+    results = []
 
     for num, expr in enumerate(get_exprs(filename)):
         print(f"{num} expression:")
         print(expr)
-        word = generate_random_word(expr.fsm, max_len_word)
-        print("\tGenerated word: ", word)
-        inc_regex = check_regex(expr.output, word)
-        inc_fsm = check_fsm(expr.fsm, word)
+        generated_word = generate_random_word(expr.fsm, max_len_word)
+        print("\tGenerated word:", generated_word)
+        inc_regex = check_regex(expr.output, generated_word)
+        inc_fsm = check_fsm(expr.fsm, generated_word)
+        result = inc_regex == inc_fsm
+        results.append(result)
+
         print(f"\tIncluded in regex: {inc_regex}")
         print(f"\tIncluded in fsm: {inc_fsm}")
-        if inc_regex != inc_fsm:
-            check_result = False
-        print(f"\tRESULT: {inc_regex == inc_fsm}\n")
+        print(f"\tRESULT: {result}\n")
 
+    check_result = all(results)
     print(f"Regex is equivalent to FSM: {check_result}")
