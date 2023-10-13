@@ -21,29 +21,45 @@ extension Character {
 }
 
 extension Array where Element == Transition {
+
     func union() -> Transition? {
         guard let first else {
             return nil
         }
         let tree = Tree(root: first.by)
         for transition in self {
-            tree.addNode(node: transition.by)
+            if transition.by != first.by {
+                tree.addNode(node: transition.by)
+            }
         }
         let transition = Transition(from: first.from, to: first.to, by: tree.root)
         return transition
     }
+
+    func compact() -> [Transition] {
+        var dict: [Int: [Transition]] = [:]
+        for transition in self {
+            if dict[transition.from.id] == nil {
+                dict[transition.from.id] = [transition]
+            } else {
+                dict[transition.from.id]?.append(transition)
+            }
+        }
+        var result: [Transition] = []
+        for (_, transitions) in dict {
+            guard let union = transitions.union() else {
+                continue
+            }
+            result.append(union)
+        }
+        return result
+    }
 }
 
-extension Node: Equatable, Hashable {
+extension Node: Equatable {
 
     static func == (lhs: Node, rhs: Node) -> Bool {
         return lhs.value == rhs.value && lhs.left == rhs.left && lhs.right == rhs.right
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(value)
-        hasher.combine(left)
-        hasher.combine(right)
     }
 }
 
@@ -62,6 +78,7 @@ enum CustomError: Error {
     case cannotParseRegex
     case noTransitionsInFSM(FSM)
     case noFinalStatesInFSM(FSM)
+    case timeoutWhileMakingFSM
 }
 
 // MARK: - Stack
@@ -88,24 +105,15 @@ struct Stack<Element> {
 
 struct Regex {
 
-    enum Operation: Equatable, Hashable {
+    enum Operation: Equatable {
 
         case union
         case concat
         case iteration
         case shuffle
-
-        var value: Character {
-            switch self {
-            case .union: return "|"
-            case .concat: return "&"
-            case .iteration: return "*"
-            case .shuffle: return "#"
-            }
-        }
     }
 
-    enum Terminal: Equatable, Hashable, Comparable {
+    enum Terminal: Hashable, Comparable {
 
         case epsilon
         case emptySet
@@ -177,6 +185,9 @@ class Node {
             self.value == .operation(.iteration)
         { // e* -> e, 0* -> 0
             self.value = .terminal(terminal)
+
+        } else if and(self.value == .operation(.iteration), node.value == self.value) { // (r*)* -> r*
+            setup(as: node)
 
         } else {
             let newNode = node
@@ -453,7 +464,7 @@ class Node {
                 }
                 let leftRegex = left.toRegex()
                 let rightRegex = right.toRegex()
-                return "(\(leftRegex)\(operation.value)\(rightRegex))"
+                return "(\(leftRegex)#\(rightRegex))"
 
             case .union:
                 guard let left, let right else {
@@ -472,7 +483,7 @@ class Node {
                 default:
                     let leftRegex = left.toRegex()
                     let rightRegex = right.toRegex()
-                    return "(\(leftRegex)\(operation.value)\(rightRegex))"
+                    return "(\(leftRegex)|\(rightRegex))"
                 }
 
             case .concat:
@@ -488,7 +499,7 @@ class Node {
                     return ""
                 }
                 let regex = left.toRegex()
-                return "(\(regex))\(operation.value)"
+                return "(\(regex))*"
             }
         }
     }
@@ -612,32 +623,25 @@ struct Transition: Equatable {
     let from: State
     let to: State
     let by: Node
-
-    func toRegex() -> String {
-        return by.toRegex()
-            .replacingOccurrences(of: "&", with: "")
-            .replacingOccurrences(of: "(", with: "")
-            .replacingOccurrences(of: ")", with: "")
-    }
 }
 
 // MARK: - Automata
 
-struct FSM {
+class FSM {
     var states = [State]()
     var terminals: [Regex.Terminal]
     var transitions = [Transition]()
     var initialState: State
     var finalStates = [State]()
 
-    init(tree: Tree) {
+    init(tree: Tree) throws {
         self.terminals = tree.terminals.sorted()
         self.initialState = .init(id: 0, regex: tree.root)
         self.states.append(initialState)
         if tree.root.hasEmptyWord() {
             finalStates.append(initialState)
         }
-        setup(by: tree, from: initialState)
+        try setup(by: tree, from: initialState, startTime: CFAbsoluteTimeGetCurrent())
     }
 
     func debug() {
@@ -653,12 +657,12 @@ struct FSM {
         for transition in transitions.sorted(by: { $0.from.id < $1.from.id || ($0.from.id == $1.from.id && $0.to.id < $1.to.id) }) {
             let from = transition.from.id
             let to = transition.to.id
-            let by = transition.toRegex()
+            let by = transition.by.toRegex()
             print("q\(from) -- \(by) --> q\(to)")
         }
     }
 
-    mutating func toRegex() throws -> String {
+    func toRegex() throws -> String {
         makeNewInitialState()
         try makeNewFinalState()
         eliminateStates()
@@ -669,7 +673,11 @@ struct FSM {
         return union.by.toRegex()
     }
 
-    private mutating func setup(by tree: Tree, from state: State) {
+    private func setup(by tree: Tree, from state: State, startTime: CFAbsoluteTime) throws {
+        let currentTime = CFAbsoluteTimeGetCurrent()
+        if currentTime - startTime > 5 {
+            throw CustomError.timeoutWhileMakingFSM
+        }
         for terminal in terminals {
             let derivative = tree.derivative(by: terminal)
             guard derivative.root.value != .terminal(.emptySet) else {
@@ -685,19 +693,19 @@ struct FSM {
                     finalStates.append(newState)
                 }
                 newTransition = .init(from: state, to: newState, by: Node(value: .terminal(terminal)))
-                setup(by: derivative, from: newState)
+                try setup(by: derivative, from: newState, startTime: startTime)
             }
             transitions.append(newTransition)
         }
     }
 
-    private mutating func eliminateStates() {
+    private func eliminateStates() {
         while states.count != 0 {
             let state = states.removeFirst()
 
             let iterationTransition = transitions.filter { $0.from == state && $0.from == $0.to }.union()
-            let toStateTransitions = transitions.filter { $0.to == state && $0.from != state }
-            let fromStateTransitions = transitions.filter { $0.from == state && $0.to != state }
+            let toStateTransitions = transitions.filter { $0.to == state && $0.from != state }.compact()
+            let fromStateTransitions = transitions.filter { $0.from == state && $0.to != state }.compact()
 
             for toStateTransition in toStateTransitions {
                 for fromStateTransition in fromStateTransitions {
@@ -720,14 +728,14 @@ struct FSM {
         }
     }
 
-    private mutating func makeNewInitialState() {
+    private func makeNewInitialState() {
         let newInitialState = State(id: -1, regex: Node(value: .terminal(.emptySet)))
         let newTransition = Transition(from: newInitialState, to: initialState, by: Node(value: .terminal(.epsilon)))
         transitions.append(newTransition)
         initialState = newInitialState
     }
 
-    private mutating func makeNewFinalState() throws {
+    private func makeNewFinalState() throws {
         guard finalStates.count > 0 else {
             throw CustomError.noFinalStatesInFSM(self)
         }
@@ -805,7 +813,7 @@ struct ResponseJSON: Encodable {
 // MARK: - Help Functions
 
 func readFromFile() -> [String] {
-    let fileName = "output.txt"
+    let fileName = "../files/output.txt"
     guard let text = try? String(contentsOfFile: fileName) else {
         return []
     }
@@ -842,15 +850,15 @@ func or(_ components: Bool...) -> Bool {
 
 let regs = readFromFile()
 var responses: [Int: ResponseJSON] = [:]
-DispatchQueue.concurrentPerform(iterations: regs.count) { index in
+for index in 0..<regs.count {
     let reg = regs[index]
     do {
         let regex = try Regex(string: reg)
         let tree = try Tree(regex: regex)
-        let fsm = FSM(tree: tree)
-        var minimizedFSM = fsm
-        let output = try minimizedFSM.toRegex()
-        let response = ResponseJSON(input: reg, output: output, fsm: .init(from: fsm))
+        let fsm = try FSM(tree: tree)
+        let fsmJson = FSMJSONModel(from: fsm)
+        let output = try fsm.toRegex()
+        let response = ResponseJSON(input: reg, output: output, fsm: fsmJson)
         responses[index] = response
     } catch {
         let response: ResponseJSON
@@ -867,6 +875,9 @@ DispatchQueue.concurrentPerform(iterations: regs.count) { index in
 
         case .noTransitionsInFSM(let fsm):
             response = .init(input: reg, fsm: .init(from: fsm), error: "No transitions in FSM")
+            
+        case .timeoutWhileMakingFSM:
+            response = .init(input: reg, error: "Time out while making fsm from regex")
 
         default:
             response = .init(input: reg, error: error.localizedDescription)
@@ -883,7 +894,7 @@ guard let string = String(data: data, encoding: .utf8) else {
 }
 
 let directoryPath = FileManager.default.currentDirectoryPath
-let resultPath = directoryPath.appending("/result.json")
+let resultPath = directoryPath.appending("/../files/result.json")
 FileManager.default.createFile(atPath: resultPath, contents: nil)
 try string.write(toFile: resultPath, atomically: true, encoding: .utf8)
 
