@@ -10,9 +10,9 @@ def main():
     else:
         input_file = input("Enter the filename: ")
 
-    output_file = sys.argv[2] if len(sys.argv) > 2 else "output.txt"
-    json_file = sys.argv[3] if len(sys.argv) > 3 else "result.json"
-    result_file = sys.argv[4] if len(sys.argv) > 4 else "RESULT.txt"
+    output_file = sys.argv[2] if len(sys.argv) > 2 else "../files/output.txt"
+    json_file = sys.argv[3] if len(sys.argv) > 3 else "../files/result.json"
+    result_file = sys.argv[4] if len(sys.argv) > 4 else "../files/RESULT.txt"
     # = = = = = = = = = = #
 
     # = CONSTANTS = #
