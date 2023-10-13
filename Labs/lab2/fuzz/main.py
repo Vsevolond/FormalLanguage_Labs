@@ -12,13 +12,13 @@ def main():
 
     output_file = sys.argv[2] if len(sys.argv) > 2 else "output.txt"
     json_file = sys.argv[3] if len(sys.argv) > 3 else "result.json"
+    result_file = sys.argv[4] if len(sys.argv) > 4 else "RESULT.txt"
     # = = = = = = = = = = #
 
     # = CONSTANTS = #
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0
-    result_file = "RESULT.txt"
     # = = = = = = = #
 
     # = READING INPUT FILE = #
