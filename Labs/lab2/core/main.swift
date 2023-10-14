@@ -694,7 +694,7 @@ class FSM {
 
     private func setup(by tree: Tree, from state: State, startTime: CFAbsoluteTime) throws {
         let currentTime = CFAbsoluteTimeGetCurrent()
-        if currentTime - startTime > 5 {
+        if currentTime - startTime > 10 {
             throw CustomError.timeoutWhileMakingFSM
         }
         for terminal in terminals {

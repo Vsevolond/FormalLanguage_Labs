@@ -44,7 +44,15 @@ done
 
 # Запускаем main.py с аргументами, если они существуют
 if [ ${#filtered_args[@]} -gt 0 ]; then
-  python main.py "${filtered_args[@]}"
+  if command -v python3 &>/dev/null; then
+    python3 main.py "${filtered_args[@]}"
+  else
+    python main.py "${filtered_args[@]}"
+  fi
 else
-  python main.py
+  if command -v python3 &>/dev/null; then
+    python3 main.py
+  else
+    python main.py
+  fi
 fi

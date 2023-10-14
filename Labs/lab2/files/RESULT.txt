@@ -1,55 +1,61 @@
 1 expression:
-	Generated word: ccccccccc
-	Included in regex: True
-	Included in fsm: True
+	Generated word: ccc
+	Included in regex: False
+	Included in fsm: False
 	RESULT: True
 
 2 expression:
-	Generated word: cccccc
+	Generated word: cbb
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 3 expression:
-	Generated word: aacaaababbabab
-	Included in regex: True
-	Included in fsm: True
-	RESULT: True
-
-4 expression:
-	Generated word: ya
-	Included in regex: False
-	Included in fsm: False
-	RESULT: True
-
-5 expression:
 	Generated word: bb
 	Included in regex: False
 	Included in fsm: False
 	RESULT: True
 
-6 expression:
-	Error in calculating FSM
-
-7 expression:
-	Generated word: ccccacaaaa
+4 expression:
+	Generated word: aa
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
+5 expression:
+	Generated word: cc
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+6 expression:
+	Generated word: b
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+7 expression:
+	Generated word: bbbcbbbbbc
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
 8 expression:
-	Error in calculating FSM
+	Generated word: c
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
 
 9 expression:
-	Generated word: bbbbbbbbbbbbbbbb
+	Generated word: aaa
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 10 expression:
-	Generated word: ccaccacaaaaaaa
-	Included in regex: True
-	Included in fsm: True
+	Generated word: a
+	Included in regex: False
+	Included in fsm: False
 	RESULT: True
 
 Regex is equivalent to FSM: True
