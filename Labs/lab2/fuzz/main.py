@@ -16,6 +16,7 @@ def main():
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0
+    number_of_exprs = 50
     # = = = = = = = #
 
     # = READING INPUT FILE = #
@@ -35,7 +36,7 @@ def main():
 
     # = WRITING TO OUTPUT FILE = #
     with open(output_file, "w", encoding='utf-8') as file:
-        for _ in range(10):
+        for _ in range(number_of_exprs):
             file.write(str(get_random_regex(
                 alph_size=alphabet_size,
                 st_height=stellar_height,

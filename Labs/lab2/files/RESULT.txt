@@ -1,29 +1,29 @@
 1 expression:
-	Generated word: ccc
-	Included in regex: False
-	Included in fsm: False
+	Generated word: aaaaaaaaa
+	Included in regex: True
+	Included in fsm: True
 	RESULT: True
 
 2 expression:
-	Generated word: cbb
+	Generated word: aaa
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 3 expression:
-	Generated word: bb
-	Included in regex: False
-	Included in fsm: False
+	Generated word: a
+	Included in regex: True
+	Included in fsm: True
 	RESULT: True
 
 4 expression:
-	Generated word: aa
+	Generated word: ccccccc
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 5 expression:
-	Generated word: cc
+	Generated word: aaaaaaaaaaaa
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
@@ -35,27 +35,267 @@
 	RESULT: True
 
 7 expression:
-	Generated word: bbbcbbbbbc
-	Included in regex: False
-	Included in fsm: False
+	Generated word: c
+	Included in regex: True
+	Included in fsm: True
 	RESULT: True
 
 8 expression:
-	Generated word: c
-	Included in regex: False
-	Included in fsm: False
+	Generated word: bbbccccbc
+	Included in regex: True
+	Included in fsm: True
 	RESULT: True
 
 9 expression:
-	Generated word: aaa
+	Generated word: ccccb
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 10 expression:
+	Generated word: baabab
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+11 expression:
+	Generated word: a
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+12 expression:
+	Generated word: bbbbabbbbb
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+13 expression:
+	Generated word: bbbbbbbbbbbbb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+14 expression:
+	Generated word: aacaacac
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+15 expression:
+	Generated word: cbccbh
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+16 expression:
+	Generated word: aabaaacccc
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+17 expression:
+	Generated word: babcab
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+18 expression:
+	Generated word: ba
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+19 expression:
+	Generated word: abb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+20 expression:
+	Generated word: acbcababac
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+21 expression:
+	Generated word: aa
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+22 expression:
+	Generated word: acbb
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+23 expression:
+	Generated word: aaaaacc
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+24 expression:
+	Generated word: baacb
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+25 expression:
+	Generated word: aaaaa
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+26 expression:
+	Generated word: accaaaa
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+27 expression:
+	Generated word: abbaaabba
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+28 expression:
+	Generated word: cccccc
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+29 expression:
+	Generated word: bacbab
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+30 expression:
+	Generated word: caccaaaaaaaaac
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+31 expression:
+	Generated word: a
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+32 expression:
+	Generated word: ckc
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+33 expression:
 	Generated word: a
 	Included in regex: False
 	Included in fsm: False
+	RESULT: True
+
+34 expression:
+	Generated word: cacc
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+35 expression:
+	Generated word: abcbbbbbb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+36 expression:
+	Generated word: bcbacaaaaccabca
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+37 expression:
+	Generated word: bb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+38 expression:
+	Generated word: bbbb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+39 expression:
+	Generated word: b
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+40 expression:
+	Generated word: ccccb
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+41 expression:
+	Generated word: bcbb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+42 expression:
+	Generated word: bbcccbbcbbcb
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+43 expression:
+	Generated word: cbbaabbcaccacabb
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+44 expression:
+	Generated word: aaa
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+45 expression:
+	Generated word: abab
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+46 expression:
+	Generated word: aaaaav
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+47 expression:
+	Generated word: xal
+	Included in regex: False
+	Included in fsm: False
+	RESULT: True
+
+48 expression:
+	Generated word: b
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+49 expression:
+	Generated word: bcccccccccc
+	Included in regex: True
+	Included in fsm: True
+	RESULT: True
+
+50 expression:
+	Generated word: cc
+	Included in regex: True
+	Included in fsm: True
 	RESULT: True
 
 Regex is equivalent to FSM: True
