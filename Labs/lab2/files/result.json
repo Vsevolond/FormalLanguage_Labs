@@ -1,282 +1,594 @@
 [
   {
-    "output" : "((a)*(b|c)(a)*bc|(a)*(b|c)(a)*cb)",
-    "input" : "((((a*)*)#(b|c))&((c|c)#b))",
+    "output" : "(((a)?|((b|c)|a(a|c))(((a|b)|c))*)|ab(b)*((a|c)(((a|b)|c))*)?)",
     "fsm" : {
-      "final_states" : [
+      "initial_state" : 0,
+      "states" : [
+        0,
+        1,
+        2,
         3
       ],
-      "states" : [
+      "final_states" : [
         0,
         1,
         2,
-        3,
-        4
+        3
       ],
       "terminals" : [
         "a",
         "b",
         "c"
       ],
-      "initial_state" : 0,
       "transitions" : [
-        {
-          "by_symbol" : "a",
-          "to_state" : 0,
-          "from_state" : 0
-        },
-        {
-          "to_state" : 1,
-          "from_state" : 1,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 2,
-          "to_state" : 3,
-          "by_symbol" : "c"
-        },
-        {
-          "from_state" : 1,
-          "to_state" : 2,
-          "by_symbol" : "b"
-        },
-        {
-          "to_state" : 3,
-          "by_symbol" : "b",
-          "from_state" : 4
-        },
-        {
-          "from_state" : 1,
-          "to_state" : 4,
-          "by_symbol" : "c"
-        },
-        {
-          "by_symbol" : "b",
-          "to_state" : 1,
-          "from_state" : 0
-        },
-        {
-          "to_state" : 1,
-          "from_state" : 0,
-          "by_symbol" : "c"
-        }
-      ]
-    }
-  },
-  {
-    "input" : "(((((c*)&c)|b)|((((a*)*)*)&(((b*)*)*)))*)",
-    "output" : "((((a)*|a(a)*b((b|a(a)*b))*(a)*)|((c|a(a)*c)|a(a)*b((b|a(a)*b))*(c|a(a)*c))(((c|a(a)*c)|a(a)*b((b|a(a)*b))*(c|a(a)*c)))*((a)*|a(a)*b((b|a(a)*b))*(a)*))|(b|((c|a(a)*c)|a(a)*b((b|a(a)*b))*(c|a(a)*c))(((c|a(a)*c)|a(a)*b((b|a(a)*b))*(c|a(a)*c)))*b)(((c|a(a)*c)|(b|a(a)*b)((b|a(a)*b))*(c|a(a)*c))(((c|a(a)*c)|a(a)*b((b|a(a)*b))*(c|a(a)*c)))*b)*(((a)*|(b|a(a)*b)((b|a(a)*b))*(a)*)|((c|a(a)*c)|(b|a(a)*b)((b|a(a)*b))*(c|a(a)*c))(((c|a(a)*c)|a(a)*b((b|a(a)*b))*(c|a(a)*c)))*((a)*|a(a)*b((b|a(a)*b))*(a)*)))",
-    "fsm" : {
-      "states" : [
-        0,
-        1,
-        2,
-        3,
-        4
-      ],
-      "transitions" : [
-        {
-          "to_state" : 1,
-          "from_state" : 1,
-          "by_symbol" : "a"
-        },
-        {
-          "to_state" : 1,
-          "by_symbol" : "a",
-          "from_state" : 2
-        },
         {
           "to_state" : 2,
           "from_state" : 2,
-          "by_symbol" : "b"
-        },
-        {
-          "to_state" : 1,
-          "from_state" : 3,
           "by_symbol" : "a"
         },
         {
-          "by_symbol" : "a",
-          "to_state" : 1,
-          "from_state" : 4
-        },
-        {
-          "to_state" : 2,
           "by_symbol" : "b",
-          "from_state" : 4
-        },
-        {
-          "from_state" : 4,
-          "to_state" : 3,
-          "by_symbol" : "c"
-        },
-        {
-          "to_state" : 4,
-          "by_symbol" : "b",
-          "from_state" : 3
-        },
-        {
-          "by_symbol" : "c",
-          "to_state" : 3,
-          "from_state" : 3
-        },
-        {
-          "to_state" : 3,
-          "by_symbol" : "c",
-          "from_state" : 2
-        },
-        {
-          "to_state" : 2,
-          "from_state" : 1,
-          "by_symbol" : "b"
-        },
-        {
-          "from_state" : 1,
-          "by_symbol" : "c",
-          "to_state" : 3
-        },
-        {
-          "by_symbol" : "a",
-          "to_state" : 1,
-          "from_state" : 0
-        },
-        {
-          "to_state" : 4,
-          "from_state" : 0,
-          "by_symbol" : "b"
-        },
-        {
-          "from_state" : 0,
-          "by_symbol" : "c",
-          "to_state" : 3
-        }
-      ],
-      "terminals" : [
-        "a",
-        "b",
-        "c"
-      ],
-      "initial_state" : 0,
-      "final_states" : [
-        0,
-        1,
-        2,
-        3,
-        4
-      ]
-    }
-  },
-  {
-    "input" : "((((a*)*)*)|((a|b)*))",
-    "output" : "((a)*|(a)*b((a|b))*)",
-    "fsm" : {
-      "terminals" : [
-        "a",
-        "b"
-      ],
-      "final_states" : [
-        0,
-        1
-      ],
-      "initial_state" : 0,
-      "states" : [
-        0,
-        1
-      ],
-      "transitions" : [
-        {
-          "from_state" : 0,
-          "by_symbol" : "a",
-          "to_state" : 0
-        },
-        {
-          "from_state" : 1,
-          "to_state" : 1,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 1,
-          "to_state" : 1,
-          "by_symbol" : "b"
-        },
-        {
-          "by_symbol" : "b",
-          "from_state" : 0,
-          "to_state" : 1
-        }
-      ]
-    }
-  },
-  {
-    "input" : "(((b*)*)*)",
-    "output" : "(b)*",
-    "fsm" : {
-      "transitions" : [
-        {
-          "by_symbol" : "b",
-          "from_state" : 0,
-          "to_state" : 0
-        }
-      ],
-      "initial_state" : 0,
-      "final_states" : [
-        0
-      ],
-      "states" : [
-        0
-      ],
-      "terminals" : [
-        "b"
-      ]
-    }
-  },
-  {
-    "input" : "(((c*)#(c*))|((b*)*))",
-    "fsm" : {
-      "terminals" : [
-        "b",
-        "c"
-      ],
-      "final_states" : [
-        0,
-        1,
-        2
-      ],
-      "states" : [
-        0,
-        1,
-        2
-      ],
-      "initial_state" : 0,
-      "transitions" : [
-        {
-          "to_state" : 1,
-          "by_symbol" : "b",
-          "from_state" : 1
-        },
-        {
-          "by_symbol" : "b",
-          "from_state" : 0,
-          "to_state" : 1
-        },
-        {
           "from_state" : 2,
-          "by_symbol" : "c",
           "to_state" : 2
         },
         {
-          "from_state" : 0,
           "to_state" : 2,
+          "by_symbol" : "c",
+          "from_state" : 2
+        },
+        {
+          "by_symbol" : "a",
+          "from_state" : 1,
+          "to_state" : 2
+        },
+        {
+          "to_state" : 2,
+          "by_symbol" : "a",
+          "from_state" : 3
+        },
+        {
+          "from_state" : 3,
+          "to_state" : 3,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 2,
+          "by_symbol" : "c",
+          "from_state" : 3
+        },
+        {
+          "to_state" : 3,
+          "from_state" : 1,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 2,
+          "by_symbol" : "c",
+          "from_state" : 1
+        },
+        {
+          "to_state" : 1,
+          "from_state" : 0,
+          "by_symbol" : "a"
+        },
+        {
+          "by_symbol" : "b",
+          "from_state" : 0,
+          "to_state" : 2
+        },
+        {
+          "to_state" : 2,
+          "from_state" : 0,
           "by_symbol" : "c"
         }
       ]
     },
-    "output" : "((b)*|c(c)*)"
+    "input" : "((((c*)#(((b*)*)*))#((b*)#(a*)))|((a&(b*))&(((b*)*)&b)))"
   },
   {
-    "input" : "(((c|a)|(a|c))#((a&b)#b))",
-    "output" : "(((((a(a|c)bb|ab(a|c)b)|abb(a|c))|b(a(a|c)b|ab(a|c)))|bcab)|c(abb|bab))",
+    "input" : "(((((b*)*)#a)*)|((((a*)*)#b)*))",
+    "output" : "((((a)*|a(a)*b(b)*)|a(a)*b(b)*a((a|b(b)*a))*(b)*)|b(b)*(a((a|b(b)*a))*(b)*)?)",
     "fsm" : {
+      "initial_state" : 0,
+      "states" : [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "final_states" : [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "transitions" : [
+        {
+          "to_state" : 1,
+          "from_state" : 1,
+          "by_symbol" : "a"
+        },
+        {
+          "to_state" : 3,
+          "by_symbol" : "a",
+          "from_state" : 3
+        },
+        {
+          "by_symbol" : "b",
+          "to_state" : 2,
+          "from_state" : 3
+        },
+        {
+          "from_state" : 2,
+          "by_symbol" : "a",
+          "to_state" : 3
+        },
+        {
+          "to_state" : 2,
+          "by_symbol" : "b",
+          "from_state" : 2
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 2,
+          "by_symbol" : "b"
+        },
+        {
+          "from_state" : 0,
+          "to_state" : 1,
+          "by_symbol" : "a"
+        },
+        {
+          "by_symbol" : "a",
+          "from_state" : 4,
+          "to_state" : 3
+        },
+        {
+          "to_state" : 4,
+          "from_state" : 4,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 4,
+          "by_symbol" : "b",
+          "from_state" : 0
+        }
+      ],
+      "terminals" : [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "fsm" : {
+      "final_states" : [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "terminals" : [
+        "a",
+        "c"
+      ],
+      "states" : [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "initial_state" : 0,
+      "transitions" : [
+        {
+          "to_state" : 2,
+          "by_symbol" : "a",
+          "from_state" : 2
+        },
+        {
+          "by_symbol" : "c",
+          "to_state" : 3,
+          "from_state" : 3
+        },
+        {
+          "by_symbol" : "c",
+          "to_state" : 3,
+          "from_state" : 2
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 2,
+          "by_symbol" : "a"
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 3,
+          "by_symbol" : "c"
+        },
+        {
+          "to_state" : 1,
+          "from_state" : 0,
+          "by_symbol" : "a"
+        },
+        {
+          "from_state" : 4,
+          "to_state" : 2,
+          "by_symbol" : "a"
+        },
+        {
+          "by_symbol" : "c",
+          "from_state" : 4,
+          "to_state" : 4
+        },
+        {
+          "to_state" : 4,
+          "by_symbol" : "c",
+          "from_state" : 0
+        }
+      ]
+    },
+    "input" : "(((((c*)*)&((a*)*))&(c*))|(a&(c*)))",
+    "output" : "((((a)?|aa(a)*)|(ac|aa(a)*c)(c)*)|c(c)*((a)*|a(a)*c(c)*))"
+  },
+  {
+    "input" : "(((c*)#(b*))*)",
+    "output" : "((b|c))*",
+    "fsm" : {
+      "final_states" : [
+        0,
+        1
+      ],
+      "states" : [
+        0,
+        1
+      ],
+      "terminals" : [
+        "b",
+        "c"
+      ],
+      "initial_state" : 0,
+      "transitions" : [
+        {
+          "from_state" : 1,
+          "to_state" : 1,
+          "by_symbol" : "b"
+        },
+        {
+          "from_state" : 1,
+          "by_symbol" : "c",
+          "to_state" : 1
+        },
+        {
+          "by_symbol" : "b",
+          "from_state" : 0,
+          "to_state" : 1
+        },
+        {
+          "to_state" : 1,
+          "from_state" : 0,
+          "by_symbol" : "c"
+        }
+      ]
+    }
+  },
+  {
+    "input" : "((((a*)&a)|a)*)",
+    "fsm" : {
+      "terminals" : [
+        "a"
+      ],
+      "transitions" : [
+        {
+          "by_symbol" : "a",
+          "to_state" : 2,
+          "from_state" : 2
+        },
+        {
+          "from_state" : 1,
+          "by_symbol" : "a",
+          "to_state" : 2
+        },
+        {
+          "to_state" : 1,
+          "from_state" : 0,
+          "by_symbol" : "a"
+        }
+      ],
+      "final_states" : [
+        0,
+        1,
+        2
+      ],
+      "states" : [
+        0,
+        1,
+        2
+      ],
+      "initial_state" : 0
+    },
+    "output" : "((a)?|aa(a)*)"
+  },
+  {
+    "input" : "((((c*)#(a*))#b)&((c|a)#a))",
+    "output" : "((((a|c))*baa(a)*|(((a|c))*bac|((a|c))*baa(a)*c)(a(a)*c)*(a)*)|(((a|c))*bc|(((a|c))*bac|((a|c))*baa(a)*c)(a(a)*c)*c)((c|a(a)*c(a(a)*c)*c))*(a(a)*|a(a)*c(a(a)*c)*(a)*))",
+    "fsm" : {
+      "transitions" : [
+        {
+          "to_state" : 0,
+          "by_symbol" : "a",
+          "from_state" : 0
+        },
+        {
+          "from_state" : 3,
+          "to_state" : 3,
+          "by_symbol" : "a"
+        },
+        {
+          "from_state" : 4,
+          "to_state" : 3,
+          "by_symbol" : "a"
+        },
+        {
+          "by_symbol" : "a",
+          "from_state" : 5,
+          "to_state" : 3
+        },
+        {
+          "from_state" : 5,
+          "to_state" : 5,
+          "by_symbol" : "c"
+        },
+        {
+          "by_symbol" : "c",
+          "from_state" : 4,
+          "to_state" : 5
+        },
+        {
+          "to_state" : 4,
+          "by_symbol" : "c",
+          "from_state" : 3
+        },
+        {
+          "by_symbol" : "a",
+          "to_state" : 3,
+          "from_state" : 2
+        },
+        {
+          "to_state" : 4,
+          "by_symbol" : "c",
+          "from_state" : 2
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 2,
+          "by_symbol" : "a"
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 5,
+          "by_symbol" : "c"
+        },
+        {
+          "to_state" : 1,
+          "by_symbol" : "b",
+          "from_state" : 0
+        },
+        {
+          "by_symbol" : "c",
+          "to_state" : 0,
+          "from_state" : 0
+        }
+      ],
+      "terminals" : [
+        "a",
+        "b",
+        "c"
+      ],
+      "final_states" : [
+        3,
+        4
+      ],
+      "states" : [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "initial_state" : 0
+    }
+  },
+  {
+    "output" : "((b|c))*a((b|c))*",
+    "fsm" : {
+      "initial_state" : 0,
+      "states" : [
+        0,
+        1
+      ],
+      "final_states" : [
+        1
+      ],
+      "transitions" : [
+        {
+          "to_state" : 1,
+          "from_state" : 1,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 1,
+          "from_state" : 1,
+          "by_symbol" : "c"
+        },
+        {
+          "to_state" : 1,
+          "by_symbol" : "a",
+          "from_state" : 0
+        },
+        {
+          "to_state" : 0,
+          "by_symbol" : "b",
+          "from_state" : 0
+        },
+        {
+          "to_state" : 0,
+          "by_symbol" : "c",
+          "from_state" : 0
+        }
+      ],
+      "terminals" : [
+        "a",
+        "b",
+        "c"
+      ]
+    },
+    "input" : "((a#((b*)*))#((b*)#(((c*)*)*)))"
+  },
+  {
+    "fsm" : {
+      "initial_state" : 0,
+      "terminals" : [
+        "a",
+        "b",
+        "c"
+      ],
+      "final_states" : [
+        1,
+        2,
+        3,
+        4,
+        5,
+        7,
+        9,
+        10
+      ],
+      "transitions" : [
+        {
+          "to_state" : 2,
+          "by_symbol" : "a",
+          "from_state" : 2
+        },
+        {
+          "by_symbol" : "a",
+          "from_state" : 3,
+          "to_state" : 3
+        },
+        {
+          "by_symbol" : "a",
+          "to_state" : 4,
+          "from_state" : 4
+        },
+        {
+          "from_state" : 4,
+          "to_state" : 4,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 4,
+          "from_state" : 3,
+          "by_symbol" : "b"
+        },
+        {
+          "by_symbol" : "a",
+          "to_state" : 5,
+          "from_state" : 5
+        },
+        {
+          "to_state" : 5,
+          "by_symbol" : "c",
+          "from_state" : 3
+        },
+        {
+          "from_state" : 2,
+          "by_symbol" : "b",
+          "to_state" : 3
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 2,
+          "by_symbol" : "a"
+        },
+        {
+          "from_state" : 1,
+          "to_state" : 3,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 1,
+          "by_symbol" : "a",
+          "from_state" : 0
+        },
+        {
+          "by_symbol" : "a",
+          "to_state" : 7,
+          "from_state" : 7
+        },
+        {
+          "from_state" : 7,
+          "to_state" : 4,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 5,
+          "from_state" : 7,
+          "by_symbol" : "c"
+        },
+        {
+          "by_symbol" : "a",
+          "to_state" : 7,
+          "from_state" : 6
+        },
+        {
+          "from_state" : 8,
+          "to_state" : 4,
+          "by_symbol" : "a"
+        },
+        {
+          "by_symbol" : "b",
+          "from_state" : 8,
+          "to_state" : 8
+        },
+        {
+          "from_state" : 9,
+          "to_state" : 9,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 9,
+          "by_symbol" : "c",
+          "from_state" : 8
+        },
+        {
+          "from_state" : 6,
+          "to_state" : 8,
+          "by_symbol" : "b"
+        },
+        {
+          "from_state" : 10,
+          "to_state" : 5,
+          "by_symbol" : "a"
+        },
+        {
+          "to_state" : 9,
+          "from_state" : 10,
+          "by_symbol" : "b"
+        },
+        {
+          "to_state" : 10,
+          "from_state" : 6,
+          "by_symbol" : "c"
+        },
+        {
+          "from_state" : 0,
+          "to_state" : 6,
+          "by_symbol" : "b"
+        }
+      ],
       "states" : [
         0,
         1,
@@ -287,337 +599,107 @@
         6,
         7,
         8,
-        9
-      ],
+        9,
+        10
+      ]
+    },
+    "input" : "(((a&(a*))|(b&c))#(((((a*)*)*)|((b*)*))|((((a*)*)*)&a)))",
+    "output" : "((((((((a|aa(a)*)|(ab|aa(a)*b)(a)*)|(ab|aa(a)*b)(a)*b((a|b))*)|(ab|aa(a)*b)(a)*c(a)*)|ba(a)*((b((a|b))*)?|c(a)*))|bb(b)*a((a|b))*)|bb(b)*c(b)*)|bc((a)*|b(b)*))"
+  },
+  {
+    "fsm" : {
       "terminals" : [
         "a",
         "b",
         "c"
       ],
       "initial_state" : 0,
-      "transitions" : [
-        {
-          "by_symbol" : "b",
-          "from_state" : 3,
-          "to_state" : 4
-        },
-        {
-          "from_state" : 2,
-          "to_state" : 3,
-          "by_symbol" : "b"
-        },
-        {
-          "to_state" : 2,
-          "by_symbol" : "a",
-          "from_state" : 1
-        },
-        {
-          "to_state" : 3,
-          "from_state" : 5,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 6,
-          "to_state" : 4,
-          "by_symbol" : "a"
-        },
-        {
-          "by_symbol" : "c",
-          "from_state" : 6,
-          "to_state" : 4
-        },
-        {
-          "to_state" : 6,
-          "from_state" : 5,
-          "by_symbol" : "b"
-        },
-        {
-          "from_state" : 5,
-          "to_state" : 3,
-          "by_symbol" : "c"
-        },
-        {
-          "to_state" : 5,
-          "by_symbol" : "b",
-          "from_state" : 1
-        },
-        {
-          "by_symbol" : "c",
-          "from_state" : 1,
-          "to_state" : 2
-        },
-        {
-          "by_symbol" : "a",
-          "from_state" : 0,
-          "to_state" : 1
-        },
-        {
-          "from_state" : 7,
-          "to_state" : 5,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 8,
-          "to_state" : 3,
-          "by_symbol" : "a"
-        },
-        {
-          "to_state" : 8,
-          "from_state" : 7,
-          "by_symbol" : "c"
-        },
-        {
-          "from_state" : 0,
-          "by_symbol" : "b",
-          "to_state" : 7
-        },
-        {
-          "to_state" : 2,
-          "by_symbol" : "a",
-          "from_state" : 9
-        },
-        {
-          "from_state" : 9,
-          "to_state" : 8,
-          "by_symbol" : "b"
-        },
-        {
-          "from_state" : 0,
-          "to_state" : 9,
-          "by_symbol" : "c"
-        }
-      ],
-      "final_states" : [
-        4
-      ]
-    }
-  },
-  {
-    "output" : "(((((a(a)*b|a(a)*ba(a)*)|(a(a)*bc|a(a)*ba(a)*c)(c)*)|(a(a)*bc|a(a)*ba(a)*c)(c)*a((a|c(c)*a))*(c)*)|a(a)*c((a|c))*b((c)*|(a|c(c)*a)((a|c(c)*a))*(c)*))|b(((a|aa(a)*)|(ac|aa(a)*c)(c)*)|(ac|aa(a)*c)(c)*a((a|c(c)*a))*(c)*))",
-    "fsm" : {
       "states" : [
         0,
         1,
         2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-      ],
-      "terminals" : [
-        "a",
-        "b",
-        "c"
+        3
       ],
       "transitions" : [
         {
-          "by_symbol" : "a",
           "to_state" : 1,
+          "by_symbol" : "a",
           "from_state" : 1
         },
         {
-          "by_symbol" : "a",
+          "by_symbol" : "c",
+          "from_state" : 2,
+          "to_state" : 2
+        },
+        {
+          "to_state" : 2,
+          "from_state" : 1,
+          "by_symbol" : "c"
+        },
+        {
+          "from_state" : 0,
+          "to_state" : 1,
+          "by_symbol" : "a"
+        },
+        {
+          "by_symbol" : "b",
           "to_state" : 3,
           "from_state" : 3
         },
         {
-          "by_symbol" : "a",
-          "from_state" : 5,
-          "to_state" : 5
-        },
-        {
-          "by_symbol" : "c",
-          "from_state" : 5,
-          "to_state" : 4
-        },
-        {
-          "to_state" : 5,
-          "from_state" : 4,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 4,
-          "to_state" : 4,
-          "by_symbol" : "c"
-        },
-        {
-          "by_symbol" : "c",
           "from_state" : 3,
-          "to_state" : 4
+          "by_symbol" : "c",
+          "to_state" : 2
         },
         {
+          "from_state" : 0,
           "to_state" : 3,
-          "by_symbol" : "a",
-          "from_state" : 2
-        },
-        {
-          "from_state" : 2,
-          "by_symbol" : "c",
-          "to_state" : 4
-        },
-        {
-          "to_state" : 2,
-          "by_symbol" : "b",
-          "from_state" : 1
-        },
-        {
-          "from_state" : 6,
-          "to_state" : 6,
-          "by_symbol" : "a"
-        },
-        {
-          "to_state" : 5,
-          "from_state" : 7,
-          "by_symbol" : "a"
-        },
-        {
-          "by_symbol" : "c",
-          "from_state" : 7,
-          "to_state" : 4
-        },
-        {
-          "to_state" : 7,
-          "by_symbol" : "b",
-          "from_state" : 6
-        },
-        {
-          "from_state" : 6,
-          "to_state" : 6,
-          "by_symbol" : "c"
-        },
-        {
-          "from_state" : 1,
-          "by_symbol" : "c",
-          "to_state" : 6
-        },
-        {
-          "from_state" : 0,
-          "by_symbol" : "a",
-          "to_state" : 1
-        },
-        {
-          "from_state" : 8,
-          "to_state" : 2,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 0,
-          "to_state" : 8,
           "by_symbol" : "b"
+        },
+        {
+          "to_state" : 2,
+          "by_symbol" : "c",
+          "from_state" : 0
         }
       ],
-      "initial_state" : 0,
       "final_states" : [
+        0,
+        1,
         2,
-        3,
-        4,
-        5,
-        7
+        3
       ]
     },
-    "input" : "(((a&(c*))#(((a*)*)#b))&(((a*)|c)*))"
+    "input" : "(((((b*)*)*)|((c*)|(a*)))&((c&(((c*)*)*))*))",
+    "output" : "(((a)*|(c|a(a)*c)(c)*)|b(b)*(c)*)"
   },
   {
+    "input" : "((b*)&a)",
     "fsm" : {
-      "final_states" : [
-        0,
-        1
-      ],
-      "states" : [
-        0,
-        1
-      ],
-      "terminals" : [
-        "b"
-      ],
       "transitions" : [
         {
-          "to_state" : 1,
-          "by_symbol" : "b",
-          "from_state" : 1
+          "by_symbol" : "a",
+          "from_state" : 0,
+          "to_state" : 1
         },
         {
           "by_symbol" : "b",
-          "from_state" : 0,
-          "to_state" : 1
+          "to_state" : 0,
+          "from_state" : 0
         }
       ],
-      "initial_state" : 0
-    },
-    "output" : "(b)*",
-    "input" : "((((b*)*)#(b#(b*)))*)"
-  },
-  {
-    "error" : "Time out while making fsm from regex",
-    "input" : "((((b*)&(a*))*)#(((a*)#b)#a))"
-  },
-  {
-    "input" : "((((((c*)*)*)#((c*)*))&(c*))#((((c*)*)|a)#(((c*)*)*)))",
-    "output" : "((((a)?|ac(c)*)|c(a(c)*)?)|cc(c)*(a(c)*)?)",
-    "fsm" : {
       "terminals" : [
         "a",
-        "c"
-      ],
-      "states" : [
-        0,
-        1,
-        2,
-        3,
-        4
-      ],
-      "transitions" : [
-        {
-          "from_state" : 2,
-          "by_symbol" : "c",
-          "to_state" : 2
-        },
-        {
-          "to_state" : 2,
-          "from_state" : 1,
-          "by_symbol" : "c"
-        },
-        {
-          "from_state" : 0,
-          "to_state" : 1,
-          "by_symbol" : "a"
-        },
-        {
-          "from_state" : 3,
-          "by_symbol" : "a",
-          "to_state" : 2
-        },
-        {
-          "from_state" : 4,
-          "to_state" : 2,
-          "by_symbol" : "a"
-        },
-        {
-          "to_state" : 4,
-          "from_state" : 4,
-          "by_symbol" : "c"
-        },
-        {
-          "by_symbol" : "c",
-          "from_state" : 3,
-          "to_state" : 4
-        },
-        {
-          "by_symbol" : "c",
-          "from_state" : 0,
-          "to_state" : 3
-        }
+        "b"
       ],
       "initial_state" : 0,
       "final_states" : [
+        1
+      ],
+      "states" : [
         0,
-        1,
-        2,
-        3,
-        4
+        1
       ]
-    }
+    },
+    "output" : "(b)*a"
   }
 ]

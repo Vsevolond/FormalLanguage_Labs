@@ -1,11 +1,10 @@
 import sys
-
+import subprocess
 from functions import *
 
 
 def main():
     # = CHECK ARGUMENTS = #
-
     input_file = sys.argv[1] if len(sys.argv) > 1 else "../files/input.txt"
     output_file = sys.argv[2] if len(sys.argv) > 2 else "../files/output.txt"
     json_file = sys.argv[3] if len(sys.argv) > 3 else "../files/result.json"
@@ -13,6 +12,7 @@ def main():
     # = = = = = = = = = = #
 
     # = CONSTANTS = #
+    swift_file = "../core/main.swift"
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0
@@ -42,8 +42,13 @@ def main():
                 max_letters=maximum_number_of_letters)) + '\n')
     # = = = = = = = = = = = = = = #
 
+    completed_process = subprocess.run(["swift", swift_file])
+
     # = CHECK EXPRESSIONS = #
-    print_results(json_file, result_file)
+    if completed_process.returncode == 0:
+        print_results(json_file, result_file)
+    else:
+        print("FAIL RUNNING SWIFT-FILE")
     # = = = = = = = = = = = #
 
 

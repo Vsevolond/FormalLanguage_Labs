@@ -1,59 +1,59 @@
 1 expression:
-	Generated word: aaaaaaaa
+	Generated word: bccbaa
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 2 expression:
-	Generated word: baaabbbaabbb
+	Generated word: ab
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 3 expression:
-	Generated word: c
+	Generated word: aacccc
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 4 expression:
-	Generated word: acaaaacaaacaac
+	Generated word: ccbcbbcbbbccce
 	Included in regex: False
 	Included in fsm: False
 	RESULT: True
 
 5 expression:
-	Generated word: cccccccc
-	Included in regex: True
-	Included in fsm: True
+	Generated word: maaaaaaaaaaa
+	Included in regex: False
+	Included in fsm: False
 	RESULT: True
 
 6 expression:
-	Generated word: aaaaa
+	Generated word: cc
 	Included in regex: False
 	Included in fsm: False
 	RESULT: True
 
 7 expression:
-	Generated word: aaaaaacaaa
+	Generated word: bcabcccccbb
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 8 expression:
-	Generated word: bbbbbbbb
+	Generated word: aaaabaaaaaaaca
 	Included in regex: True
 	Included in fsm: True
 	RESULT: True
 
 9 expression:
-	Generated word: abc
-	Included in regex: True
-	Included in fsm: True
+	Generated word: cccccccccccccd
+	Included in regex: False
+	Included in fsm: False
 	RESULT: True
 
 10 expression:
-	Generated word: ccccccccce
+	Generated word: aa
 	Included in regex: False
 	Included in fsm: False
 	RESULT: True
