@@ -281,10 +281,11 @@ class Expression:
             __str__(self): Return a string representation of the Expression.
     """
 
-    def __init__(self, input: str, output: str, fsm: dict):
+    def __init__(self, input: str = None, output: str = None, fsm: dict = None, error: str = None):
         self.input = input
         self.output = output
-        self.fsm = FSM(**fsm)
+        self.fsm = FSM(**fsm) if fsm is not None else None
+        self.error = error
 
     def __str__(self):
         result = "{\n"
@@ -325,15 +326,15 @@ def get_alphabet(size: int = 1) -> list[str]:
     return alphabet
 
 
-def parse_json(filename: str) -> dict:
+def parse_json(filename: str) -> list[dict]:
     """
-        Parse a JSON file and return its contents.
+        Parse a JSON file and return its contents as a list of dictionaries.
 
         Args:
             filename (str): The path to the JSON file to be parsed.
 
         Returns:
-            dict: A dictionary representing the contents of the JSON file.)
+            list[dict]: A list of dictionaries representing the contents of the JSON file.
     """
     with open(filename, 'r') as file:
         result = json.load(file)
@@ -577,15 +578,18 @@ def print_results(filename: str, output_filename: str, max_len_word: int = 15):
     with open(output_filename, "w", encoding='utf-8') as file:
         for num, expr in enumerate(get_exprs(filename)):
             file.write(f"{num + 1} expression:\n")
-            generated_word = generate_random_word(expr.fsm, max_len_word)
-            file.write(f"\tGenerated word: {generated_word}\n")
-            inc_regex = check_regex(expr.output, generated_word)
-            inc_fsm = check_fsm(expr.fsm, generated_word)
-            result = inc_regex == inc_fsm
-            results.append(result)
-            file.write(f"\tIncluded in regex: {inc_regex}\n")
-            file.write(f"\tIncluded in fsm: {inc_fsm}\n")
-            file.write(f"\tRESULT: {result}\n\n")
+            if expr.error is not None:
+                file.write("\tError in calculating FSM\n\n")
+            else:
+                generated_word = generate_random_word(expr.fsm, max_len_word)
+                file.write(f"\tGenerated word: {generated_word}\n")
+                inc_regex = check_regex(expr.output, generated_word)
+                inc_fsm = check_fsm(expr.fsm, generated_word)
+                result = inc_regex == inc_fsm
+                results.append(result)
+                file.write(f"\tIncluded in regex: {inc_regex}\n")
+                file.write(f"\tIncluded in fsm: {inc_fsm}\n")
+                file.write(f"\tRESULT: {result}\n\n")
 
         check_result = all(results)
         file.write(f"Regex is equivalent to FSM: {check_result}")
