@@ -7,12 +7,12 @@ def main():
     # = CHECK ARGUMENTS = #
     input_file = f"../{sys.argv[1]}" if len(sys.argv) > 1 else "../files/input.txt"
     output_file = f"../{sys.argv[2]}" if len(sys.argv) > 2 else "../files/output.txt"
-    json_file = f"../{sys.argv[3]}" if len(sys.argv) > 3 else "../files/result.json"
-    result_file = f"../{sys.argv[4]}" if len(sys.argv) > 4 else "../files/RESULT.txt"
     # = = = = = = = = = = #
 
     # = CONSTANTS = #
     swift_file = "../core/main.swift"
+    result_file = "../files/RESULT.txt"
+    json_file = "../files/result.json"
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0

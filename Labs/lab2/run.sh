@@ -19,20 +19,8 @@ else
   arg2=""
 fi
 
-if [ $num_args -ge 3 ]; then
-  arg3="$3"
-else
-  arg3=""
-fi
-
-if [ $num_args -ge 4 ]; then
-  arg4="$4"
-else
-  arg4=""
-fi
-
 # Запускаем main.py и передаем аргументы, только если они существуют
-args=("$arg1" "$arg2" "$arg3" "$arg4")
+args=("$arg1" "$arg2")
 
 # Фильтруем пустые аргументы
 filtered_args=()
