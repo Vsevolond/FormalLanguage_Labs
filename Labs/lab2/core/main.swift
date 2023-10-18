@@ -9,11 +9,11 @@ extension Character {
         case "(": return .openBracket
         case ")": return .closeBracket
         case "*": return .operation(.iteration)
-        case "&": return .operation(.concat)
+        //case "&": return .operation(.concat)
         case "|": return .operation(.union)
         case "#": return .operation(.shuffle)
-        case "e": return .terminal(.epsilon)
-        case "0": return .terminal(.emptySet)
+        //case "e": return .terminal(.epsilon)
+        //case "0": return .terminal(.emptySet)
         case "a"..."z": return .terminal(.letter(self))
         default: return .unexpected
         }
@@ -345,7 +345,7 @@ class Node {
 
                     } else if and(
                         right.value == .operation(.union),
-                        or(left == right.left,left == right.right)
+                        or(left == right.left, left == right.right)
                     ) { // r1|(r1|r2) -> r1|r2, r1|(r2|r1) -> r2|r1
                         setup(as: right)
 
@@ -694,7 +694,7 @@ class FSM {
 
     private func setup(by tree: Tree, from state: State, startTime: CFAbsoluteTime) throws {
         let currentTime = CFAbsoluteTimeGetCurrent()
-        if currentTime - startTime > 10 {
+        if currentTime - startTime > 10.0 {
             throw CustomError.timeoutWhileMakingFSM
         }
         for terminal in terminals {
@@ -865,12 +865,7 @@ func or(_ components: Bool...) -> Bool {
     return false
 }
 
-// MARK: - MAIN
-
-let regs = readFromFile()
-var responses: [Int: ResponseJSON] = [:]
-for index in 0..<regs.count {
-    let reg = regs[index]
+func getResponse(of reg: String) -> ResponseJSON {
     do {
         let regex = try Regex(string: reg)
         let tree = try Tree(regex: regex)
@@ -878,7 +873,8 @@ for index in 0..<regs.count {
         let fsmJson = FSMJSONModel(from: fsm)
         let output = try fsm.toRegex()
         let response = ResponseJSON(input: reg, output: output, fsm: fsmJson)
-        responses[index] = response
+        return response
+
     } catch {
         let response: ResponseJSON
         switch error as? CustomError {
@@ -894,28 +890,50 @@ for index in 0..<regs.count {
 
         case .noTransitionsInFSM(let fsm):
             response = .init(input: reg, fsm: .init(from: fsm), error: "No transitions in FSM")
-            
+
         case .timeoutWhileMakingFSM:
             response = .init(input: reg, error: "Time out while making fsm from regex")
 
         default:
             response = .init(input: reg, error: error.localizedDescription)
         }
-        responses[index] = response
+        return response
     }
 }
 
-let encoder = JSONEncoder()
-encoder.outputFormatting = .prettyPrinted
-let data = try encoder.encode(responses.map { $0.value })
-guard let string = String(data: data, encoding: .utf8) else {
-    fatalError("error in encoding data")
-}
+// MARK: - MAIN
 
-let directoryPath = FileManager.default.currentDirectoryPath
-let resultPath = directoryPath.appending("/../files/result.json")
-FileManager.default.createFile(atPath: resultPath, contents: nil)
-try string.write(toFile: resultPath, atomically: true, encoding: .utf8)
+if CommandLine.arguments.count > 1 {
+    let reg = CommandLine.arguments[1]
+    let response = getResponse(of: reg)
+    if let error = response.error {
+        print(error)
+    } else if let output = response.output {
+        print(output)
+    } else {
+        print("something wrong")
+    }
+} else {
+    let regs = readFromFile()
+    var responses: [Int: ResponseJSON] = [:]
+    for index in 0..<regs.count {
+        let reg = regs[index]
+        let response = getResponse(of: reg)
+        responses[index] = response
+    }
+
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .prettyPrinted
+    let data = try encoder.encode(responses.map { $0.value })
+    guard let string = String(data: data, encoding: .utf8) else {
+        fatalError("error in encoding data")
+    }
+
+    let directoryPath = FileManager.default.currentDirectoryPath
+    let resultPath = directoryPath.appending("/../files/result.json")
+    FileManager.default.createFile(atPath: resultPath, contents: nil)
+    try string.write(toFile: resultPath, atomically: true, encoding: .utf8)
+}
 
 
 
