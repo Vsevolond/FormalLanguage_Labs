@@ -175,10 +175,13 @@ class TreeNode:
         if self.value in Operation.get_binary_operands(by="value"):
             left_expr = self.left.infix_expression()
             right_expr = self.right.infix_expression()
-            return f"({left_expr}{self.value}{right_expr})"
+            if self.value == Operation.AND.value:
+                return f"{left_expr}{right_expr}"
+            else:
+                return f"({left_expr}{self.value}{right_expr})"
         elif self.value in Operation.get_unary_operands(by="value"):
             left_expr = self.left.infix_expression()
-            return f"({left_expr}{self.value})"
+            return f"({left_expr}){self.value}"
         else:
             return str(self.value)
 
@@ -366,7 +369,7 @@ def get_random_regex(alph_size: int = 3,
             return "No expression"
         elif letters_cnt == 1:
             decision = random.randint(1, 100)
-            if stars < st_height and decision < 50:
+            if stars < st_height and decision < 7:
                 operation = Operation.get_random(exclude=Operation.get_binary_operands())
             else:
                 return TreeNode(random.choice(alphabet))
