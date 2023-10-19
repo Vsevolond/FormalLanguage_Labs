@@ -165,7 +165,7 @@ class TreeNode:
             result += self.right.display_tree(depth + 1)
         return result
 
-    def infix_expression(self):
+    def infix_expression(self, is_root=True) -> str:
         """
             Returns the infix expression of the subtree rooted at this node.
 
@@ -173,14 +173,18 @@ class TreeNode:
                 str: Infix expression of the subtree.
         """
         if self.value in Operation.get_binary_operands(by="value"):
-            left_expr = self.left.infix_expression()
-            right_expr = self.right.infix_expression()
+            left_expr = self.left.infix_expression(is_root=False)
+            right_expr = self.right.infix_expression(is_root=False)
             if self.value == Operation.AND.value:
                 return f"{left_expr}{right_expr}"
+            elif is_root:
+                return f"{left_expr}{self.value}{right_expr}"
             else:
                 return f"({left_expr}{self.value}{right_expr})"
         elif self.value in Operation.get_unary_operands(by="value"):
-            left_expr = self.left.infix_expression()
+            left_expr = self.left.infix_expression(is_root=False)
+            if len(left_expr) == 1 or (left_expr[0] == '(' and left_expr[-1] == ')'):
+                return f"{left_expr}{self.value}"
             return f"({left_expr}){self.value}"
         else:
             return str(self.value)
