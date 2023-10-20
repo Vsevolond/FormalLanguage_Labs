@@ -11,7 +11,7 @@ extension Character {
         case "*": return .operation(.iteration)
         case "|": return .operation(.union)
         case "#": return .operation(.shuffle)
-        case "a"..."z": return .terminal(.letter(self))
+        case "a"..."z" where self != "e": return .terminal(.letter(self))
         default: return .unexpected
         }
     }
@@ -25,7 +25,7 @@ extension Array where Element == Transition {
         }
         let tree = Tree(root: first.by)
         for transition in self {
-            if transition.by != first.by {
+            if transition != first {
                 tree.addNode(node: transition.by)
             }
         }
@@ -127,13 +127,24 @@ struct Regex {
         case concat
         case iteration
         case shuffle
+        case maybe
+
+        var value: String {
+            switch self {
+            case .union: return "|"
+            case .concat: return ""
+            case .iteration: return "*"
+            case .shuffle: return "#"
+            case .maybe: return "?"
+            }
+        }
 
         var priority: Int {
             switch self {
             case .union: return 1
             case .shuffle: return 2
             case .concat: return 3
-            case .iteration: return 4
+            case .iteration, .maybe: return 4
             }
         }
     }
@@ -225,25 +236,37 @@ class Node {
 
     func setNode(node: Node) {
         if case .terminal(let terminal) = node.value,
-            or(terminal == .epsilon, terminal == .emptySet),
-            self.value == .operation(.iteration)
-        { // e* -> e, 0* -> 0
+                or(terminal == .epsilon, terminal == .emptySet),
+                or(self.value == .operation(.iteration), self.value == .operation(.maybe))
+        { // e* -> e, 0* -> 0, e? -> e, 0? -> 0
             self.value = .terminal(terminal)
 
-        } else if self.value == .operation(.iteration), node.value == self.value { // (r*)* -> r*
+        } else if node.value == self.value,
+                  or(self.value == .operation(.iteration), self.value == .operation(.maybe))
+        { // (r*)* -> r*, (r?)? -> r?
             setup(as: node)
 
-        } else if self.value == .operation(.iteration), node.value == .operation(.union) { // (r|e)* -> r*. (e|r)* -> r*
-            guard let leftNode = node.left, let rightNode = node.right else {
+        } else if node.value != self.value,
+                  or(self.value == .operation(.iteration), self.value == .operation(.maybe)),
+                  or(node.value == .operation(.iteration), node.value == .operation(.maybe))
+        { // (r*)? -> r*, (r?)* -> r*
+            guard let leftNode = node.left else {
                 return
             }
+            self.value = .operation(.iteration)
+            addNode(node: leftNode)
 
-            if rightNode.value == .terminal(.epsilon) {
-                addNode(node: leftNode)
-            } else if leftNode.value == .terminal(.epsilon) {
-                addNode(node: rightNode)
-            } else {
-                addNode(node: node)
+        } else if self.value == .operation(.maybe),
+                  node.value == .operation(.concat),
+                  or(
+                      and(node.right?.value == .operation(.iteration), node.left == node.right?.left),
+                      and(node.left?.value == .operation(.iteration), node.left?.left == node.right)
+                  )
+        { // xx*|e -> x*, x*x|e -> x*
+            if let iterationNode = node.right, iterationNode.value == .operation(.iteration) {
+                setup(as: iterationNode)
+            } else if let iterationNode = node.left, iterationNode.value == .operation(.iteration) {
+                setup(as: iterationNode)
             }
 
         } else {
@@ -274,7 +297,7 @@ class Node {
                         setup(as: right)
                     }
 
-                case .iteration:
+                case .iteration, .maybe:
                     return
                 }
             }
@@ -297,67 +320,15 @@ class Node {
                     }
 
                 case .union:
-                    if value == .terminal(.epsilon) { // e|e -> e
-                        self.value = value
-
-                    } else if value == .operation(.iteration) {
-                        if left.value == value { // x*|e -> x*
-                            setup(as: left)
-
-                        } else { // e|x* -> x*
-                            setup(as: right)
-                        }
-
-                    } else if value == .operation(.union) {
-                        if left.value == value, 
-                            or(left.left?.value == .terminal(.epsilon), left.right?.value == .terminal(.epsilon))
-                        { // (r|e)|e -> r|e, (e|r)|e -> r|e
-                            setup(as: left)
-
-                        } else if right.value == value, 
-                            or(right.left?.value == .terminal(.epsilon), right.right?.value == .terminal(.epsilon))
-                        { // e|(r|e) -> r|e, e(e|r) -> r|e
-                            setup(as: right)
-
-                        } else {
-                            setNode(node: left)
-                            setNode(node: right)
-                        }
-
-                    } else if and(
-                        left.value == .operation(.concat),
-                        right.value == .terminal(.epsilon),
-                        or(
-                            and(left.right?.value == .operation(.iteration), left.left == left.right?.left),
-                            and(left.left?.value == .operation(.iteration), left.left?.left == left.right)
-                        )
-                    ) { // xx*|e -> x*, x*x|e -> x*
-                        if let iterationNode = left.right, iterationNode.value == .operation(.iteration) {
-                            setup(as: iterationNode)
-                        } else if let iterationNode = left.left, iterationNode.value == .operation(.iteration) {
-                            setup(as: iterationNode)
-                        }
-
-                    } else if and(
-                        left.value == .terminal(.epsilon),
-                        right.value == .operation(.concat),
-                        or(
-                            and(right.right?.value == .operation(.iteration), right.left == right.right?.left),
-                            and(right.left?.value == .operation(.iteration), right.left?.left == right.right)
-                        )
-                    ) { // e|xx* -> x*, e|x*x -> x*
-                        if let iterationNode = right.right, iterationNode.value == .operation(.iteration) {
-                            setup(as: iterationNode)
-                        } else if let iterationNode = right.left, iterationNode.value == .operation(.iteration) {
-                            setup(as: iterationNode)
-                        }
-
+                    let newNode = Node(value: .operation(.maybe))
+                    if left.value == .terminal(.epsilon) {
+                        newNode.setNode(node: right)
                     } else {
-                        setNode(node: left)
-                        setNode(node: right)
+                        newNode.setNode(node: left)
                     }
+                    setup(as: newNode)
 
-                case .iteration:
+                case .iteration, .maybe:
                     return
                 }
             }
@@ -411,13 +382,20 @@ class Node {
                         or(right == left.left, right == left.right)
                     ) { // (r1|r2)|r1 -> (r1|r2), (r2|r1)|r1 -> (r2|r1)
                         setup(as: left)
+                        
+                    } else if case .terminal(let leftTerminal) = left.value,
+                              case .terminal(let rightTerminal) = right.value,
+                              leftTerminal.value > rightTerminal.value
+                    { // b|a -> a|b
+                        addNode(node: right)
+                        addNode(node: left)
 
                     } else {
                         setNode(node: left)
                         setNode(node: right)
                     }
 
-                case .iteration:
+                case .iteration, .maybe:
                     return
                 }
             }
@@ -445,7 +423,7 @@ class Node {
                 }
                 return left.hasEmptyWord() && right.hasEmptyWord()
 
-            case .iteration:
+            case .iteration, .maybe:
                 return true
             }
         }
@@ -508,6 +486,14 @@ class Node {
                 newNode.setChilds(left: left.derivative(by: letter), right: self)
                 return newNode
 
+            case .maybe:
+                guard let left else {
+                    return self
+                }
+
+                let node = left.derivative(by: letter)
+                return node
+
             case .shuffle:
                 let newNode = Node(value: .operation(.union))
                 guard let left, let right else {
@@ -541,48 +527,20 @@ class Node {
         case .operation(let operation):
             switch operation {
 
-            case .shuffle:
+            case .shuffle, .union, .concat:
                 guard let left, let right else {
                     return ""
                 }
                 let leftRegex = left.toRegex()
                 let rightRegex = right.toRegex()
-                return isLessPriority ? "(\(leftRegex)#\(rightRegex))" : "\(leftRegex)#\(rightRegex)"
+                return isLessPriority ? "(\(leftRegex)\(operation.value)\(rightRegex))" : "\(leftRegex)\(operation.value)\(rightRegex)"
 
-            case .union:
-                guard let left, let right else {
-                    return ""
-                }
-                switch (left.value, right.value) {
-
-                case (.terminal(.epsilon), _):
-                    let rightRegex = right.toRegex()
-                    return "\(rightRegex)?"
-
-                case (_, .terminal(.epsilon)):
-                    let leftRegex = left.toRegex()
-                    return "\(leftRegex)?"
-
-                default:
-                    let leftRegex = left.toRegex()
-                    let rightRegex = right.toRegex()
-                    return isLessPriority ? "(\(leftRegex)|\(rightRegex))" : "\(leftRegex)|\(rightRegex)"
-                }
-
-            case .concat:
-                guard let left, let right else {
-                    return ""
-                }
-                let leftRegex = left.toRegex()
-                let rightRegex = right.toRegex()
-                return isLessPriority ? "(\(leftRegex)\(rightRegex))" : "\(leftRegex)\(rightRegex)"
-
-            case .iteration:
+            case .iteration, .maybe:
                 guard let left else {
                     return ""
                 }
                 let regex = left.toRegex()
-                return "\(regex)*"
+                return "\(regex)\(operation.value)"
             }
         }
     }
