@@ -378,12 +378,12 @@ def get_random_regex(alph_size: int = 3,
             else:
                 return TreeNode(random.choice(alphabet))
         else:
-            operation = Operation.get_random(exclude=[] if stars <= st_height else [Operation.STAR])
+            operation = Operation.get_random(exclude=[] if stars < st_height else [Operation.STAR])
 
         right_leaves = letters_cnt // 2
         left_leaves = letters_cnt - right_leaves
 
-        if operation == Operation.STAR and stars <= st_height:
+        if operation == Operation.STAR and stars < st_height:
             stars += 1
         else:
             stars = 0
