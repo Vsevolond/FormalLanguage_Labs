@@ -7,12 +7,12 @@ def main():
     # = CHECK ARGUMENTS = #
     input_file = f"../{sys.argv[1]}" if len(sys.argv) > 1 else "../files/input.txt"
     output_file = f"../{sys.argv[2]}" if len(sys.argv) > 2 else "../files/output.txt"
-    json_file = f"../{sys.argv[3]}" if len(sys.argv) > 3 else "../files/result.json"
-    result_file = f"../{sys.argv[4]}" if len(sys.argv) > 4 else "../files/RESULT.txt"
     # = = = = = = = = = = #
 
     # = CONSTANTS = #
     swift_file = "../core/main.swift"
+    result_file = "../files/RESULT.txt"
+    json_file = "../files/result.json"
     alphabet_size = 0
     stellar_height = 0
     maximum_number_of_letters = 0
@@ -42,18 +42,18 @@ def main():
                 st_height=stellar_height,
                 max_letters=maximum_number_of_letters)) + '\n')
     # = = = = = = = = = = = = = = #
-
-    # = RUN SWIFT CODE = #
-    completed_process = subprocess.run(["swift", swift_file])
-    # = = = = = = = = = #
-
-    # = CHECK EXPRESSIONS = #
-    if completed_process.returncode == 0:
-        print_results(json_file, result_file)
-        print("GOOD RUNNING CODE")
-    else:
-        print("FAIL RUNNING SWIFT-FILE")
-    # = = = = = = = = = = = #
+    #
+    # # = RUN SWIFT CODE = #
+    # completed_process = subprocess.run(["swift", swift_file])
+    # # = = = = = = = = = #
+    #
+    # # = CHECK EXPRESSIONS = #
+    # if completed_process.returncode == 0:
+    #     print_results(json_file, result_file)
+    #     print("GOOD RUNNING CODE")
+    # else:
+    #     print("FAIL RUNNING SWIFT-FILE")
+    # # = = = = = = = = = = = #
 
 
 if __name__ == "__main__":
