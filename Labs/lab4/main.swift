@@ -12,6 +12,12 @@ extension Dictionary where Value: SetAlgebra, Value.Element: Hashable {
 
 extension Array {
     
+    func withAppending(_ element: Element) -> Array<Element> {
+        var newArray = self
+        newArray.append(element)
+        return newArray
+    }
+    
     func withRemovingFirst() -> Array<Element> {
         var newArray = self
         newArray.removeFirst()
@@ -59,6 +65,33 @@ extension String {
     }
 }
 
+// MARK: - Stack
+
+struct Stack<Element> {
+
+    private var items: [Element] = []
+
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+
+    @discardableResult
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+
+    func top() -> Element? {
+        return items.last
+    }
+}
+
+// MARK: - FSMError
+
+enum FSMError: Error {
+    
+    case notLR0Grammar
+}
+
 // MARK: - GrammarSymbol
 
 enum GrammarSymbol: Hashable {
@@ -91,7 +124,7 @@ enum GrammarSymbol: Hashable {
 
 // MARK: - GrammarRule
 
-struct GrammarRule {
+struct GrammarRule: Hashable {
 
     let left: GrammarSymbol
     let right: [GrammarSymbol]
@@ -111,6 +144,10 @@ struct GrammarRule {
     
     func printRule() {
         print("\(left.value) -> \(right.reduce(into: "") { $0 += String($1.value) })")
+    }
+    
+    func convertedToLR0Item() -> LR0Item {
+        .init(grammarRule: self)
     }
 }
 
@@ -150,9 +187,12 @@ class Grammar {
             rule.printRule()
         }
         
+        print("FIRST:")
         firstSet.forEach { key, value in
             print("\(key.value): \(value.map { $0.value })")
         }
+        
+        print("FOLLOW:")
         followSet.forEach { key, value in
             print("\(key.value): \(value.map { $0.value })")
         }
@@ -342,6 +382,187 @@ extension Grammar {
     }
 }
 
+// MARK: - For FSM
+
+extension Grammar {
+    
+    func getRulesByLeft(nonTerm: GrammarSymbol) -> Set<GrammarRule> {
+        let rulesByLeft = rules.filter { $0.left == nonTerm }
+        return Set(rulesByLeft)
+    }
+    
+    func getRulesConvertedToLR0Items() -> Set<LR0Item> {
+        let items: [LR0Item] = rules.map { $0.convertedToLR0Item() }
+        return Set(items)
+    }
+}
+
+// MARK: - LR0Item
+
+struct LR0Item: Hashable {
+    
+    private var point: Int = 0
+    private var grammarRule: GrammarRule
+    
+    var observingToken: GrammarSymbol {
+        grammarRule.right[point]
+    }
+    
+    init(grammarRule: GrammarRule) {
+        let left = grammarRule.left
+        var right = grammarRule.right
+        if let firstElement = right.first, firstElement == .eps, right.count == 1 { // A -> e = A -> .$
+            right = []
+        }
+        self.grammarRule = GrammarRule(left: left, right: right.withAppending(.end))
+    }
+    
+    init(point: Int, grammarRule: GrammarRule) {
+        self.point = point
+        self.grammarRule = grammarRule
+    }
+    
+    func goto(by token: GrammarSymbol) -> LR0Item? {
+        guard observingToken == token else {
+            return nil
+        }
+        
+        let situation = LR0Item(point: point + 1, grammarRule: grammarRule)
+        return situation
+    }
+    
+    func printItem() {
+        var right = grammarRule.right.reduce(into: "") { $0 += String($1.value) }
+        let index = right.index(right.startIndex, offsetBy: point)
+        right.insert(".", at: index)
+        let string = "\(grammarRule.left.value) -> \(right)"
+        print(string)
+    }
+}
+
+// MARK: - State
+
+struct FSMState {
+    
+    static var ID: Int = 0
+    private var items: Set<LR0Item>
+    let id: Int
+    
+    private var countOfEndedItems: Int {
+        let count = items.map { $0.observingToken }.filter { $0 == .end }.count
+        return count
+    }
+    
+    var observingTokens: Set<GrammarSymbol> {
+        let tokens = items.reduce(into: Set<GrammarSymbol>()) { $0.insert($1.observingToken) }
+        return tokens
+    }
+    
+    var isFinal: Bool {
+        countOfEndedItems == 1
+    }
+    
+    init(items: Set<LR0Item>) {
+        self.id = FSMState.ID
+        FSMState.ID += 1
+        self.items = items
+    }
+    
+    func goto(by token: GrammarSymbol, grammar: Grammar) throws -> FSMState {
+        var newState = FSMState(items: Set(items.compactMap { $0.goto(by: token) }))
+        newState.closure(by: grammar)
+        
+        guard newState.countOfEndedItems <= 1 else {
+            throw FSMError.notLR0Grammar
+        }
+        return newState
+    }
+    
+    mutating private func closure(by grammar: Grammar) {
+        var nonTerms: Set<GrammarSymbol> = .init()
+        var observingNonTerms = observingTokens.filter { $0.isNonTerm }
+
+        while nonTerms != observingNonTerms {
+            nonTerms = observingNonTerms
+            nonTerms.forEach { nonTerm in
+                let rules = grammar.getRulesByLeft(nonTerm: nonTerm)
+                items.formUnion(rules.map { $0.convertedToLR0Item() })
+            }
+
+            observingNonTerms = observingTokens.filter { $0.isNonTerm }
+        }
+    }
+    
+    func printState() {
+        print("\(id):")
+        items.forEach { item in
+            item.printItem()
+        }
+    }
+}
+
+extension FSMState: Hashable {
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(items)
+    }
+    
+    static func ==(lhs: FSMState, rhs: FSMState) -> Bool {
+        lhs.items == rhs.items
+    }
+}
+
+// MARK: - FSM
+
+class FSM {
+    
+    private var states: Set<FSMState> = .init()
+    private var initialState: FSMState
+    private var transitions: [Int: [GrammarSymbol: Int]] = [:]
+    
+    init(from grammar: Grammar) throws {
+        initialState = .init(items: grammar.getRulesConvertedToLR0Items())
+        states.insert(initialState)
+        
+        transitions[initialState.id] = [:]
+        
+        var stack: Stack<FSMState> = .init()
+        stack.push(initialState)
+        
+        while stack.top() != nil {
+            let state = stack.pop()
+
+            for token in state.observingTokens.withRemoving(.end) {
+                let newState = try state.goto(by: token, grammar: grammar)
+
+                if let existState = states.first(where: { $0 == newState }) {
+                    transitions[state.id]?.updateValue(existState.id, forKey: token)
+                    FSMState.ID -= 1
+                } else {
+                    states.insert(newState)
+                    transitions[state.id]?.updateValue(newState.id, forKey: token)
+                    transitions[newState.id] = [:]
+                    stack.push(newState)
+                }
+            }
+        }
+    }
+    
+    func printFSM() {
+        for state in states.sorted(by: { $0.id < $1.id }) {
+            state.printState()
+        }
+        
+        print()
+        for (from, byTo) in transitions.sorted(by: { $0.key < $1.key }) {
+            for (by, to) in byTo.sorted(by: { $0.value < $1.value }) {
+                print("\(from) --\(by.value)--> \(to)")
+            }
+            print()
+        }
+    }
+}
+
 // MARK: - Help Functions
 
 func readFromFile(fileName: String) -> [String] {
@@ -375,3 +596,7 @@ enum Constants {
 let file = readFromFile(fileName: Constants.grammarFileName)
 let grammar = Grammar(from: file)
 grammar.printGrammar()
+print()
+let fsm = try FSM(from: grammar)
+fsm.printFSM()
+
