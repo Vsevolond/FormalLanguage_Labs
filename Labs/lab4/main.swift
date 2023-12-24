@@ -597,6 +597,11 @@ let file = readFromFile(fileName: Constants.grammarFileName)
 let grammar = Grammar(from: file)
 grammar.printGrammar()
 print()
-let fsm = try FSM(from: grammar)
-fsm.printFSM()
+do {
+    let fsm = try FSM(from: grammar)
+    fsm.printFSM()
+} catch {
+    print(error)
+}
+
 
