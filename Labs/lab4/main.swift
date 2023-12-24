@@ -23,6 +23,12 @@ extension Array {
         newArray.removeFirst()
         return newArray
     }
+    
+    func withRemovingLast() -> Array<Element> {
+        var newArray = self
+        newArray.removeLast()
+        return newArray
+    }
 }
 
 extension Set {
@@ -395,6 +401,14 @@ extension Grammar {
         let items: [LR0Item] = rules.map { $0.convertedToLR0Item() }
         return Set(items)
     }
+    
+    func getIndexOfRule(by item: LR0Item) -> Int? {
+        rules.firstIndex(of: item.toGrammarRule())
+    }
+    
+    func getFollowSet(of nonTerm: GrammarSymbol) -> Set<GrammarSymbol>? {
+        followSet[nonTerm]
+    }
 }
 
 // MARK: - LR0Item
@@ -402,7 +416,7 @@ extension Grammar {
 struct LR0Item: Hashable {
     
     private var point: Int = 0
-    private var grammarRule: GrammarRule
+    var grammarRule: GrammarRule
     
     var observingToken: GrammarSymbol {
         grammarRule.right[point]
@@ -431,6 +445,16 @@ struct LR0Item: Hashable {
         return situation
     }
     
+    func toGrammarRule() -> GrammarRule {
+        var right = grammarRule.right.withRemovingLast()
+        if right.isEmpty {
+            right.append(.eps)
+        }
+        
+        let rule = GrammarRule(left: grammarRule.left, right: right)
+        return rule
+    }
+    
     func printItem() {
         var right = grammarRule.right.reduce(into: "") { $0 += String($1.value) }
         let index = right.index(right.startIndex, offsetBy: point)
@@ -451,6 +475,10 @@ struct FSMState {
     private var countOfEndedItems: Int {
         let count = items.map { $0.observingToken }.filter { $0 == .end }.count
         return count
+    }
+    
+    var endedItem: LR0Item? {
+        items.filter { $0.observingToken == .end }.first
     }
     
     var observingTokens: Set<GrammarSymbol> {
@@ -512,6 +540,26 @@ extension FSMState: Hashable {
     }
 }
 
+// MARK: - Control Table Value
+
+enum ControlTableValue {
+    
+    case some(state: Int)
+    case shift(state: Int)
+    case reduce(indexOfRule: Int)
+    
+    var value: String {
+        switch self {
+        case .some(let state):
+            return String(state)
+        case .shift(let state):
+            return "s(\(state))"
+        case .reduce(let indexOfRule):
+            return "r(\(indexOfRule))"
+        }
+    }
+}
+
 // MARK: - FSM
 
 class FSM {
@@ -520,7 +568,11 @@ class FSM {
     private var initialState: FSMState
     private var transitions: [Int: [GrammarSymbol: Int]] = [:]
     
+    private var controlTable: [Int: [GrammarSymbol: ControlTableValue]] = [:]
+    private var grammar: Grammar
+    
     init(from grammar: Grammar) throws {
+        self.grammar = grammar
         initialState = .init(items: grammar.getRulesConvertedToLR0Items())
         states.insert(initialState)
         
@@ -546,6 +598,36 @@ class FSM {
                 }
             }
         }
+        
+        fillControlTable()
+    }
+    
+    private func fillControlTable() {
+        for (from, byTo) in transitions {
+            controlTable[from] = [:]
+            for (by, to) in byTo {
+                
+                if by.isTerm {
+                    controlTable[from]?.updateValue(.shift(state: to), forKey: by)
+                } else {
+                    controlTable[from]?.updateValue(.some(state: to), forKey: by)
+                }
+            }
+        }
+        
+        states.filter { $0.isFinal }.forEach { state in
+            guard 
+                let item = state.endedItem,
+                let index = grammar.getIndexOfRule(by: item),
+                let followSet = grammar.getFollowSet(of: item.grammarRule.left)
+            else {
+                fatalError("something wrong")
+            }
+            
+            followSet.forEach { term in
+                controlTable[state.id]?.updateValue(.reduce(indexOfRule: index), forKey: term)
+            }
+        }
     }
     
     func printFSM() {
@@ -557,6 +639,14 @@ class FSM {
         for (from, byTo) in transitions.sorted(by: { $0.key < $1.key }) {
             for (by, to) in byTo.sorted(by: { $0.value < $1.value }) {
                 print("\(from) --\(by.value)--> \(to)")
+            }
+            print()
+        }
+        
+        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
+            print("\(state):")
+            for (symbol, action) in dict {
+                print("\(symbol.value) = \(action.value)")
             }
             print()
         }
