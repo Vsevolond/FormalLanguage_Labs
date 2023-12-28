@@ -51,7 +51,7 @@ extension Character {
     var grammarSymbol: GrammarSymbol {
         switch self {
         case "e": return .eps
-        case "$": return .end
+        case "@": return .end
         default:
             if self.isLetter, self.isUppercase {
                 return .nonTerm(self)
@@ -75,7 +75,15 @@ extension String {
 
 struct Stack<Element> {
 
-    private var items: [Element] = []
+    var items: [Element] = []
+    
+    var isEmpty: Bool {
+        top() == nil
+    }
+    
+    init(items: [Element] = []) {
+        self.items = items.reversed()
+    }
 
     mutating func push(_ item: Element) {
         items.append(item)
@@ -84,6 +92,20 @@ struct Stack<Element> {
     @discardableResult
     mutating func pop() -> Element {
         return items.removeLast()
+    }
+    
+    @discardableResult
+    mutating func pop(count: Int) -> [Element] {
+        guard count <= items.count else {
+            fatalError("count is more than count of exist items")
+        }
+
+        var top = [Element]()
+        (0..<count).forEach { _ in
+            top.append(pop())
+        }
+        
+        return top.reversed()
     }
 
     func top() -> Element? {
@@ -123,7 +145,7 @@ enum GrammarSymbol: Hashable {
         case .eps:
             return "e"
         case .end:
-            return "$"
+            return "@"
         }
     }
 }
@@ -143,13 +165,13 @@ struct GrammarRule: Hashable {
         Set(right.filter({ $0.isNonTerm }))
     }
     
+    var stringValue: String {
+        "\(left.value) -> \(right.reduce(into: "") { $0 += String($1.value) })"
+    }
+    
     init(left: GrammarSymbol, right: [GrammarSymbol]) {
         self.left = left
         self.right = right
-    }
-    
-    func printRule() {
-        print("\(left.value) -> \(right.reduce(into: "") { $0 += String($1.value) })")
     }
     
     func convertedToLR0Item() -> LR0Item {
@@ -164,7 +186,7 @@ class Grammar {
     private var nonTerms: Set<GrammarSymbol>
     private var terms: Set<GrammarSymbol>
     private var rules: [GrammarRule]
-    private var startNonTerm: GrammarSymbol
+    var startNonTerm: GrammarSymbol
     
     private var firstSet: [GrammarSymbol : Set<GrammarSymbol>]
     private var followSet: [GrammarSymbol : Set<GrammarSymbol>]
@@ -183,14 +205,14 @@ class Grammar {
         firstSet = nonTerms.reduce(into: [GrammarSymbol : Set<GrammarSymbol>]()) { $0.updateValue(.init(), forKey: $1) }
         followSet = nonTerms.reduce(into: [GrammarSymbol : Set<GrammarSymbol>]()) { $0.updateValue(.init(), forKey: $1) }
         
-        removeUselessSymbols()
+//        removeUselessSymbols()
         makeFirstSet()
         makeFollowSet()
     }
     
     func printGrammar() {
         rules.forEach { rule in
-            rule.printRule()
+            print(rule.stringValue)
         }
         
         print("FIRST:")
@@ -402,10 +424,6 @@ extension Grammar {
         return Set(items)
     }
     
-    func getIndexOfRule(by item: LR0Item) -> Int? {
-        rules.firstIndex(of: item.toGrammarRule())
-    }
-    
     func getFollowSet(of nonTerm: GrammarSymbol) -> Set<GrammarSymbol>? {
         followSet[nonTerm]
     }
@@ -546,7 +564,7 @@ enum ControlTableValue {
     
     case some(state: Int)
     case shift(state: Int)
-    case reduce(indexOfRule: Int)
+    case reduce(by: GrammarRule)
     
     var value: String {
         switch self {
@@ -554,8 +572,8 @@ enum ControlTableValue {
             return String(state)
         case .shift(let state):
             return "s(\(state))"
-        case .reduce(let indexOfRule):
-            return "r(\(indexOfRule))"
+        case .reduce(let rule):
+            return "r(\(rule.stringValue))"
         }
     }
 }
@@ -602,34 +620,6 @@ class FSM {
         fillControlTable()
     }
     
-    private func fillControlTable() {
-        for (from, byTo) in transitions {
-            controlTable[from] = [:]
-            for (by, to) in byTo {
-                
-                if by.isTerm {
-                    controlTable[from]?.updateValue(.shift(state: to), forKey: by)
-                } else {
-                    controlTable[from]?.updateValue(.some(state: to), forKey: by)
-                }
-            }
-        }
-        
-        states.filter { $0.isFinal }.forEach { state in
-            guard 
-                let item = state.endedItem,
-                let index = grammar.getIndexOfRule(by: item),
-                let followSet = grammar.getFollowSet(of: item.grammarRule.left)
-            else {
-                fatalError("something wrong")
-            }
-            
-            followSet.forEach { term in
-                controlTable[state.id]?.updateValue(.reduce(indexOfRule: index), forKey: term)
-            }
-        }
-    }
-    
     func printFSM() {
         for state in states.sorted(by: { $0.id < $1.id }) {
             state.printState()
@@ -650,6 +640,98 @@ class FSM {
             }
             print()
         }
+    }
+}
+
+// MARK: - Fill control table
+
+extension FSM {
+    
+    private func fillControlTable() {
+        for (from, byTo) in transitions {
+            controlTable[from] = [:]
+            for (by, to) in byTo {
+                
+                if by.isTerm {
+                    controlTable[from]?.updateValue(.shift(state: to), forKey: by)
+                } else {
+                    controlTable[from]?.updateValue(.some(state: to), forKey: by)
+                }
+            }
+        }
+        
+        states.filter { $0.isFinal }.forEach { state in
+            guard
+                let item = state.endedItem,
+                let followSet = grammar.getFollowSet(of: item.grammarRule.left)
+            else {
+                fatalError("something wrong")
+            }
+            
+            followSet.forEach { term in
+                controlTable[state.id]?.updateValue(.reduce(by: item.toGrammarRule()), forKey: term)
+            }
+        }
+    }
+}
+
+// MARK: - Analyse word
+
+extension FSM {
+    
+    func analyse(word: String) -> Bool {
+        var tokens = Stack<GrammarSymbol>(items: word.map { $0.grammarSymbol }.withAppending(.end))
+        var stack = Stack<GrammarSymbol>()
+        var states = Stack<Int>()
+
+        states.push(0)
+        var currentState: Int {
+            states.top() ?? -1
+        }
+        
+        while stack.top() != grammar.startNonTerm {
+            let token = tokens.pop()
+
+            guard
+                let values = controlTable[currentState],
+                let controlValue = values[token]
+            else {
+                return false
+            }
+            
+            switch controlValue {
+                
+            case .some(let state):
+                states.push(state)
+                
+            case .shift(let state):
+                stack.push(token)
+                states.push(state)
+                
+            case .reduce(let rule):
+                let right = stack.pop(count: rule.right.count)
+                states.pop(count: right.count)
+                
+                guard right == rule.right else {
+                    fatalError("something wrong")
+                }
+                
+                tokens.push(token)
+                tokens.push(rule.left)
+                stack.push(rule.left)
+            }
+        }
+        
+        guard
+            stack.pop() == tokens.pop(),
+            stack.isEmpty,
+            tokens.top() == .end,
+            currentState == 0
+        else {
+            fatalError("something wrong")
+        }
+        
+        return true
     }
 }
 
@@ -675,21 +757,23 @@ enum Constants {
 
     #if DEBUG
     static let grammarFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/grammar.txt"
+    static let wordFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/word.txt"
     #else
     static let grammarFileName = "grammar.txt"
+    static let wordFileName = "word.txt"
     #endif
     static let grammarRuleSeparator = "->"
 }
 
 // MARK: - MAIN
 
-let file = readFromFile(fileName: Constants.grammarFileName)
-let grammar = Grammar(from: file)
-grammar.printGrammar()
-print()
+let grammarFile = readFromFile(fileName: Constants.grammarFileName)
+let grammar = Grammar(from: grammarFile)
 do {
     let fsm = try FSM(from: grammar)
-    fsm.printFSM()
+    let word = readFromFile(fileName: Constants.wordFileName).reduce("", +)
+    let isBelong = fsm.analyse(word: word)
+    print(isBelong)
 } catch {
     print(error)
 }

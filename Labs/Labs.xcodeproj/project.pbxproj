@@ -53,6 +53,7 @@
 		D329C5412B2CEC54004673AE /* lab4 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = lab4; sourceTree = BUILT_PRODUCTS_DIR; };
 		D329C5432B2CEC54004673AE /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D329C5482B360764004673AE /* grammar.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = grammar.txt; sourceTree = "<group>"; };
+		D38CE72B2B3C70CB001782BD /* word.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = word.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +125,7 @@
 			children = (
 				D329C5432B2CEC54004673AE /* main.swift */,
 				D329C5482B360764004673AE /* grammar.txt */,
+				D38CE72B2B3C70CB001782BD /* word.txt */,
 			);
 			path = lab4;
 			sourceTree = "<group>";
