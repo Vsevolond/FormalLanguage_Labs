@@ -172,3 +172,65 @@ class EarleyState(object):
         """
 
         return EarleyState(Rule(EarleyState.GAM, ['S']))
+
+
+class ChartEntry(object):
+    """
+    Represents an entry in the chart used by the Earley algorithm.
+    """
+
+    def __init__(self, states):
+        # List of Earley states.
+        self.states = states
+
+    def __iter__(self):
+        return iter(self.states)
+
+    def __len__(self):
+        return len(self.states)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return '\n'.join(str(s) for s in self.states)
+
+    def add(self, state):
+        """
+        Add the given state (if it hasn't already been added).
+        """
+
+        if state not in self.states:
+            self.states.append(state)
+
+
+class Chart(object):
+    """
+    Represents the chart used in the Earley algorithm.
+    """
+
+    def __init__(self, entries):
+        # List of chart entries.
+        self.entries = entries
+
+    def __getitem__(self, i):
+        return self.entries[i]
+
+    def __len__(self):
+        return len(self.entries)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return '\n\n'.join([("Chart[%d]:\n" % i) + str(entry) for i, entry in
+                            enumerate(self.entries)])
+
+    @staticmethod
+    def init(l):
+        """
+        Initializes a chart with l entries (Including the dummy start state).
+        """
+
+        return Chart([(ChartEntry([]) if i > 0 else
+                       ChartEntry([EarleyState.init()])) for i in range(l)])
