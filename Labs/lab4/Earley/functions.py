@@ -1,4 +1,5 @@
 from collections import defaultdict
+from nltk.tree import Tree
 
 
 class Rule(object):
@@ -227,10 +228,109 @@ class Chart(object):
                             enumerate(self.entries)])
 
     @staticmethod
-    def init(l):
+    def init(l: int):
         """
         Initializes a chart with l entries (Including the dummy start state).
         """
 
         return Chart([(ChartEntry([]) if i > 0 else
                        ChartEntry([EarleyState.init()])) for i in range(l)])
+
+
+class EarleyParse(object):
+    """
+    Represents the Earley-generated parse for a given sentence according to a
+    given grammar.
+    """
+
+    def __init__(self, sentence, grammar):
+        self.words = sentence.split()
+        self.grammar = grammar
+
+        self.chart = Chart.init(len(self.words) + 1)
+
+    def predictor(self, state, pos):
+        """
+        Earley Predictor.
+        """
+
+        for rule in self.grammar[state.next()]:
+            self.chart[pos].add(EarleyState(rule, dot=0,
+                                            sent_pos=state.chart_pos, chart_pos=state.chart_pos))
+
+    def scanner(self, state, pos):
+        """
+        Earley Scanner.
+        """
+
+        if state.chart_pos < len(self.words):
+            word = self.words[state.chart_pos]
+
+            if any((word in r) for r in self.grammar[state.next()]):
+                self.chart[pos + 1].add(EarleyState(Rule(state.next(), [word]),
+                                                    dot=1, sent_pos=state.chart_pos,
+                                                    chart_pos=(state.chart_pos + 1)))
+
+    def completer(self, state, pos):
+        """
+        Earley Completer.
+        """
+
+        for prev_state in self.chart[state.sent_pos]:
+            if prev_state.next() == state.rule.lhs:
+                self.chart[pos].add(EarleyState(prev_state.rule,
+                                                dot=(prev_state.dot + 1), sent_pos=prev_state.sent_pos,
+                                                chart_pos=pos,
+                                                back_pointers=(prev_state.back_pointers + [state])))
+
+    def parse(self):
+        """
+        Parses the sentence by running the Earley algorithm and filling out the
+        chart.
+        """
+
+        # Checks whether the next symbol for the given state is a tag.
+        def is_tag(state):
+            return self.grammar.is_tag(state.next())
+
+        for i in range(len(self.chart)):
+            for state in self.chart[i]:
+                if not state.is_complete():
+                    if is_tag(state):
+                        self.scanner(state, i)
+                    else:
+                        self.predictor(state, i)
+                else:
+                    self.completer(state, i)
+
+    def has_parse(self):
+        """
+        Checks whether the sentence has a parse.
+        """
+
+        for state in self.chart[-1]:
+            if state.is_complete() and state.rule.lhs == 'S' and \
+                    state.sent_pos == 0 and state.chart_pos == len(self.words):
+                return True
+
+        return False
+
+    def get(self):
+        """
+        Returns the parse if it exists, otherwise returns None.
+        """
+
+        def get_helper(state):
+            if self.grammar.is_tag(state.rule.lhs):
+                return Tree(state.rule.lhs, [state.rule.rhs[0]])
+
+            return Tree(state.rule.lhs,
+                        [get_helper(s) for s in state.back_pointers])
+
+        for state in self.chart[-1]:
+            if state.is_complete() and state.rule.lhs == 'S' and \
+                    state.sent_pos == 0 and state.chart_pos == len(self.words):
+                return get_helper(state)
+
+        return None
+
