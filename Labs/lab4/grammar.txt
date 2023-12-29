@@ -1,4 +1,1 @@
-E -> E + T
-E -> T
-T -> n
-T -> (E)
+S -> aSd | aScd | a

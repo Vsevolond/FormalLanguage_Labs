@@ -205,7 +205,6 @@ class Grammar {
         firstSet = nonTerms.reduce(into: [GrammarSymbol : Set<GrammarSymbol>]()) { $0.updateValue(.init(), forKey: $1) }
         followSet = nonTerms.reduce(into: [GrammarSymbol : Set<GrammarSymbol>]()) { $0.updateValue(.init(), forKey: $1) }
         
-//        removeUselessSymbols()
         makeFirstSet()
         makeFollowSet()
     }
@@ -224,81 +223,6 @@ class Grammar {
         followSet.forEach { key, value in
             print("\(key.value): \(value.map { $0.value })")
         }
-    }
-}
-
-// MARK: - For removing useless symbols in grammar
-
-extension Grammar {
-    
-    private func removeUselessSymbols() { // удаление бесполезных символов
-        deleteRulesWithNotGenerativeNonTerms()
-        deleteRulesWithNotReachableNonTerms()
-    }
-    
-    private func deleteRulesWithNotGenerativeNonTerms() { // удаление правил, содержащих непопрождающие нетерминалы
-        var generativeNonTerms: Set<GrammarSymbol> = .init()
-        rules.forEach { rule in
-            if rule.nonTerms.count == 0 {
-                generativeNonTerms.insert(rule.left)
-            }
-        }
-
-        var count = 0
-        while count != generativeNonTerms.count {
-            count = generativeNonTerms.count
-
-            rules.forEach { rule in
-                if generativeNonTerms.contains(rule.nonTerms) {
-                    generativeNonTerms.insert(rule.left)
-                }
-            }
-        }
-        
-        var i = 0
-        while i < rules.count {
-            if !generativeNonTerms.contains(rules[i].left) || !generativeNonTerms.isSuperset(of: rules[i].nonTerms) {
-                rules.remove(at: i)
-            } else {
-                i += 1
-            }
-        }
-        
-        guard let newStart = rules.first?.left else {
-            fatalError("there are no rules with generative non terms")
-        }
-        
-        startNonTerm = newStart
-    }
-    
-    private func deleteRulesWithNotReachableNonTerms() { // удаление правил, содержащих недостижимые нетерминалы
-        var reachableNonTerms: Set<GrammarSymbol> = [startNonTerm]
-
-        var count = 0
-        while count != reachableNonTerms.count {
-            count = reachableNonTerms.count
-            
-            rules.forEach { rule in
-                if reachableNonTerms.contains(rule.left) {
-                    reachableNonTerms.formUnion(rule.nonTerms)
-                }
-            }
-        }
-        
-        var i = 0
-        while i < rules.count {
-            if !reachableNonTerms.contains(rules[i].left) || !reachableNonTerms.isSuperset(of: rules[i].nonTerms) {
-                rules.remove(at: i)
-            } else {
-                i += 1
-            }
-        }
-        
-        guard let newStart = rules.first?.left else {
-            fatalError("there are no rules with reachable non terms")
-        }
-        
-        startNonTerm = newStart
     }
 }
 
