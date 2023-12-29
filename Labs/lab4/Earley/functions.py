@@ -131,7 +131,7 @@ class EarleyState(object):
     def __eq__(self, other):
         if type(other) is EarleyState:
             return self.rule == other.rule and self.dot == other.dot and \
-                   self.sent_pos == other.sent_pos
+                self.sent_pos == other.sent_pos
 
         return False
 
@@ -334,3 +334,8 @@ class EarleyParse(object):
 
         return None
 
+
+def run_parse(sentence, grammar):
+    parse = EarleyParse(sentence, grammar)
+    parse.parse()
+    return parse.get()
