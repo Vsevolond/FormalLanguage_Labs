@@ -72,6 +72,7 @@
 		D38CE7592B418566001782BD /* fsm-state.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "fsm-state.swift"; sourceTree = "<group>"; };
 		D38CE75B2B418581001782BD /* control-table-value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-value.swift"; sourceTree = "<group>"; };
 		D38CE75D2B418594001782BD /* fsm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fsm.swift; sourceTree = "<group>"; };
+		D38CE75F2B4187BB001782BD /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +146,7 @@
 				D329C5432B2CEC54004673AE /* main.swift */,
 				D329C5482B360764004673AE /* grammar.txt */,
 				D38CE72B2B3C70CB001782BD /* word.txt */,
+				D38CE75F2B4187BB001782BD /* run.sh */,
 			);
 			path = lab4;
 			sourceTree = "<group>";
