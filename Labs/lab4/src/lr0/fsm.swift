@@ -1,5 +1,12 @@
 import Foundation
 
+// MARK: - FSMError
+
+enum FSMError: Error {
+    
+    case notLR0Grammar
+}
+
 // MARK: - FSM
 
 class FSM {

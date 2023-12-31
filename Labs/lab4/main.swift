@@ -1,23 +1,5 @@
 import Foundation
 
-// MARK: - FSMError
-
-enum FSMError: Error {
-    
-    case notLR0Grammar
-}
-
-
-
-
-
-
-
-
-
-
-
-
 // MARK: - Help Functions
 
 func readFromFile(fileName: String) -> [String] {
