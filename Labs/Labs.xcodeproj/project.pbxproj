@@ -110,6 +110,7 @@
 		D38CE7452B417A00001782BD /* control-table-value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-value.swift"; sourceTree = "<group>"; };
 		D38CE7472B417A23001782BD /* fsm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fsm.swift; sourceTree = "<group>"; };
 		D38CE74A2B417AD0001782BD /* grammar.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = grammar.txt; sourceTree = "<group>"; };
+		D38CE7602B418886001782BD /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -238,6 +239,7 @@
 				D38CE7492B417AB0001782BD /* src */,
 				D38CE7322B417868001782BD /* main.swift */,
 				D38CE74A2B417AD0001782BD /* grammar.txt */,
+				D38CE7602B418886001782BD /* run.sh */,
 			);
 			path = lab5;
 			sourceTree = "<group>";
