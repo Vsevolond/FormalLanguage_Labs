@@ -541,7 +541,7 @@ class FSM {
             }
         }
         
-        fillControlTable()
+        try fillControlTable()
     }
     
     func printFSM() {
@@ -571,7 +571,7 @@ class FSM {
 
 extension FSM {
     
-    private func fillControlTable() {
+    private func fillControlTable() throws {
         for (from, byTo) in transitions {
             controlTable[from] = [:]
             for (by, to) in byTo {
@@ -584,7 +584,7 @@ extension FSM {
             }
         }
         
-        states.filter { $0.isFinal }.forEach { state in
+        try states.filter { $0.isFinal }.forEach { state in
             guard
                 let item = state.endedItem,
                 let followSet = grammar.getFollowSet(of: item.grammarRule.left)
@@ -592,7 +592,10 @@ extension FSM {
                 fatalError("something wrong")
             }
             
-            followSet.forEach { term in
+            try followSet.forEach { term in
+                if let values = controlTable[state.id], values[term] != nil {
+                    throw FSMError.notLR0Grammar
+                }
                 controlTable[state.id]?.updateValue(.reduce(by: item.toGrammarRule()), forKey: term)
             }
         }
