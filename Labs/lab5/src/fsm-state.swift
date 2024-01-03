@@ -13,8 +13,8 @@ struct FSMState {
         return count
     }
     
-    var endedItem: LR0Item? {
-        items.filter { $0.observingToken == .end }.first
+    var endedItems: [LR0Item] {
+        items.filter { $0.observingToken == .end }
     }
     
     var observingTokens: Set<GrammarSymbol> {
@@ -23,7 +23,7 @@ struct FSMState {
     }
     
     var isFinal: Bool {
-        countOfEndedItems == 1
+        countOfEndedItems > 0
     }
     
     init(items: Set<LR0Item>) {
@@ -32,13 +32,10 @@ struct FSMState {
         self.items = items
     }
     
-    func goto(by token: GrammarSymbol, grammar: Grammar) throws -> FSMState {
+    func goto(by token: GrammarSymbol, grammar: Grammar) -> FSMState {
         var newState = FSMState(items: Set(items.compactMap { $0.goto(by: token) }))
         newState.closure(by: grammar)
         
-        guard newState.countOfEndedItems <= 1 else {
-            throw FSMError.notLR0Grammar
-        }
         return newState
     }
     

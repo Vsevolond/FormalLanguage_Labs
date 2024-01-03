@@ -13,10 +13,8 @@ struct LR0Item: Hashable {
     
     init(grammarRule: GrammarRule) {
         let left = grammarRule.left
-        var right = grammarRule.right
-        if let firstElement = right.first, firstElement == .eps, right.count == 1 { // A -> e = A -> .$
-            right = []
-        }
+        let right = grammarRule.right
+        
         self.grammarRule = GrammarRule(left: left, right: right.withAppending(.end))
     }
     
@@ -35,12 +33,9 @@ struct LR0Item: Hashable {
     }
     
     func toGrammarRule() -> GrammarRule {
-        var right = grammarRule.right.withRemovingLast()
-        if right.isEmpty {
-            right.append(.eps)
-        }
-        
+        let right = grammarRule.right.withRemovingLast()
         let rule = GrammarRule(left: grammarRule.left, right: right)
+
         return rule
     }
     

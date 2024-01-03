@@ -21,11 +21,9 @@ func readFromFile(fileName: String) -> [String] {
 private enum Constants {
 
     #if DEBUG
-    static let grammarFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/grammar.txt"
-    static let wordFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/word.txt"
+    static let grammarFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab5/grammar.txt"
     #else
     static let grammarFileName = "grammar.txt"
-    static let wordFileName = "word.txt"
     #endif
 }
 
@@ -33,13 +31,14 @@ private enum Constants {
 
 let grammarFile = readFromFile(fileName: Constants.grammarFileName)
 let grammar = Grammar(from: grammarFile)
-do {
-    let fsm = try FSM(from: grammar)
-    let word = readFromFile(fileName: Constants.wordFileName).reduce("", +)
-    let isBelong = fsm.analyse(word: word)
-    print(isBelong)
-} catch {
-    print(error)
-}
+let fsm = FSM(from: grammar)
+#if DEBUG
+let word = readLine()!
+#else
+let word = CommandLine.arguments[1]
+#endif
+
+let isBelong = fsm.analyse(word: word)
+print(isBelong)
 
 

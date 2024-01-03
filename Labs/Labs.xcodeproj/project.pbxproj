@@ -30,8 +30,10 @@
 		D38CE7402B41798B001782BD /* grammar-rule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE73F2B41798B001782BD /* grammar-rule.swift */; };
 		D38CE7422B4179AB001782BD /* lr0-item.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7412B4179AB001782BD /* lr0-item.swift */; };
 		D38CE7442B4179C6001782BD /* fsm-state.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7432B4179C6001782BD /* fsm-state.swift */; };
-		D38CE7462B417A00001782BD /* control-table-value.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7452B417A00001782BD /* control-table-value.swift */; };
+		D38CE7462B417A00001782BD /* control-table-action.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7452B417A00001782BD /* control-table-action.swift */; };
 		D38CE7482B417A23001782BD /* fsm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7472B417A23001782BD /* fsm.swift */; };
+		D38CE7622B456FA5001782BD /* control-table.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7612B456FA5001782BD /* control-table.swift */; };
+		D38CE7642B45703D001782BD /* control-table-row.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7632B45703D001782BD /* control-table-row.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -107,10 +109,12 @@
 		D38CE73F2B41798B001782BD /* grammar-rule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "grammar-rule.swift"; sourceTree = "<group>"; };
 		D38CE7412B4179AB001782BD /* lr0-item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "lr0-item.swift"; sourceTree = "<group>"; };
 		D38CE7432B4179C6001782BD /* fsm-state.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "fsm-state.swift"; sourceTree = "<group>"; };
-		D38CE7452B417A00001782BD /* control-table-value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-value.swift"; sourceTree = "<group>"; };
+		D38CE7452B417A00001782BD /* control-table-action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-action.swift"; sourceTree = "<group>"; };
 		D38CE7472B417A23001782BD /* fsm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fsm.swift; sourceTree = "<group>"; };
 		D38CE74A2B417AD0001782BD /* grammar.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = grammar.txt; sourceTree = "<group>"; };
 		D38CE7602B418886001782BD /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
+		D38CE7612B456FA5001782BD /* control-table.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table.swift"; sourceTree = "<group>"; };
+		D38CE7632B45703D001782BD /* control-table-row.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-row.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -254,8 +258,10 @@
 				D38CE73F2B41798B001782BD /* grammar-rule.swift */,
 				D38CE7412B4179AB001782BD /* lr0-item.swift */,
 				D38CE7432B4179C6001782BD /* fsm-state.swift */,
-				D38CE7452B417A00001782BD /* control-table-value.swift */,
+				D38CE7452B417A00001782BD /* control-table-action.swift */,
 				D38CE7472B417A23001782BD /* fsm.swift */,
+				D38CE7612B456FA5001782BD /* control-table.swift */,
+				D38CE7632B45703D001782BD /* control-table-row.swift */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -418,13 +424,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				D38CE7422B4179AB001782BD /* lr0-item.swift in Sources */,
+				D38CE7642B45703D001782BD /* control-table-row.swift in Sources */,
 				D38CE73C2B417945001782BD /* stack.swift in Sources */,
 				D38CE73A2B4178DE001782BD /* grammar.swift in Sources */,
 				D38CE7332B417868001782BD /* main.swift in Sources */,
 				D38CE7482B417A23001782BD /* fsm.swift in Sources */,
-				D38CE7462B417A00001782BD /* control-table-value.swift in Sources */,
+				D38CE7462B417A00001782BD /* control-table-action.swift in Sources */,
 				D38CE73E2B41796F001782BD /* grammar-symbol.swift in Sources */,
 				D38CE7382B4178A9001782BD /* extensions.swift in Sources */,
+				D38CE7622B456FA5001782BD /* control-table.swift in Sources */,
 				D38CE7442B4179C6001782BD /* fsm-state.swift in Sources */,
 				D38CE7402B41798B001782BD /* grammar-rule.swift in Sources */,
 			);

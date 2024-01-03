@@ -1,12 +1,5 @@
 import Foundation
 
-// MARK: - FSMError
-
-enum FSMError: Error {
-    
-    case notLR0Grammar
-}
-
 // MARK: - FSM
 
 class FSM {
@@ -15,10 +8,10 @@ class FSM {
     private var initialState: FSMState
     private var transitions: [Int: [GrammarSymbol: Int]] = [:]
     
-    private var controlTable: [Int: [GrammarSymbol: ControlTableValue]] = [:]
+    private var controlTable: ControlTable = .init()
     private var grammar: Grammar
     
-    init(from grammar: Grammar) throws {
+    init(from grammar: Grammar) {
         self.grammar = grammar
         initialState = .init(items: grammar.getRulesConvertedToLR0Items())
         states.insert(initialState)
@@ -32,7 +25,7 @@ class FSM {
             let state = stack.pop()
 
             for token in state.observingTokens.withRemoving(.end) {
-                let newState = try state.goto(by: token, grammar: grammar)
+                let newState = state.goto(by: token, grammar: grammar)
 
                 if let existState = states.first(where: { $0 == newState }) {
                     transitions[state.id]?.updateValue(existState.id, forKey: token)
@@ -46,7 +39,7 @@ class FSM {
             }
         }
         
-        try fillControlTable()
+        fillControlTable()
     }
     
     func printFSM() {
@@ -62,13 +55,13 @@ class FSM {
             print()
         }
         
-        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
-            print("\(state):")
-            for (symbol, action) in dict {
-                print("\(symbol.value) = \(action.value)")
-            }
-            print()
-        }
+//        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
+//            print("\(state):")
+//            for (symbol, actions) in dict {
+//                print("\(symbol.value) = \(actions.reduce(into: "") { $0 += "\($1.value) "})")
+//            }
+//            print()
+//        }
     }
 }
 
@@ -76,32 +69,28 @@ class FSM {
 
 extension FSM {
     
-    private func fillControlTable() throws {
+    private func fillControlTable() {
         for (from, byTo) in transitions {
-            controlTable[from] = [:]
             for (by, to) in byTo {
                 
                 if by.isTerm {
-                    controlTable[from]?.updateValue(.shift(state: to), forKey: by)
+                    controlTable.add(to: from, by: by, action: .shift(state: to))
                 } else {
-                    controlTable[from]?.updateValue(.some(state: to), forKey: by)
+                    controlTable.add(to: from, by: by, action: .some(state: to))
                 }
             }
         }
         
-        try states.filter { $0.isFinal }.forEach { state in
-            guard
-                let item = state.endedItem,
-                let followSet = grammar.getFollowSet(of: item.grammarRule.left)
-            else {
-                fatalError("something wrong")
-            }
-            
-            try followSet.forEach { term in
-                if let values = controlTable[state.id], values[term] != nil {
-                    throw FSMError.notLR0Grammar
+        states.filter { $0.isFinal }.forEach { state in
+            let items = state.endedItems
+            items.forEach { item in
+                guard let followSet = grammar.getFollowSet(of: item.grammarRule.left) else {
+                    fatalError("there is no follow set for: \(item.grammarRule.left)")
                 }
-                controlTable[state.id]?.updateValue(.reduce(by: item.toGrammarRule()), forKey: term)
+                
+                followSet.forEach { term in
+                    controlTable.add(to: state.id, by: term, action: .reduce(by: item.toGrammarRule()))
+                }
             }
         }
     }
@@ -112,57 +101,6 @@ extension FSM {
 extension FSM {
     
     func analyse(word: String) -> Bool {
-        var tokens = Stack<GrammarSymbol>(items: word.map { $0.grammarSymbol }.withAppending(.end))
-        var stack = Stack<GrammarSymbol>()
-        var states = Stack<Int>()
-
-        states.push(0)
-        var currentState: Int {
-            states.top() ?? -1
-        }
-        
-        while stack.top() != grammar.startNonTerm {
-            let token = tokens.pop()
-
-            guard
-                let values = controlTable[currentState],
-                let controlValue = values[token]
-            else {
-                return false
-            }
-            
-            switch controlValue {
-                
-            case .some(let state):
-                states.push(state)
-                
-            case .shift(let state):
-                stack.push(token)
-                states.push(state)
-                
-            case .reduce(let rule):
-                let right = stack.pop(count: rule.right.count)
-                states.pop(count: right.count)
-                
-                guard right == rule.right else {
-                    fatalError("something wrong")
-                }
-                
-                tokens.push(token)
-                tokens.push(rule.left)
-                stack.push(rule.left)
-            }
-        }
-        
-        guard
-            stack.pop() == tokens.pop(),
-            stack.isEmpty,
-            tokens.top() == .end,
-            currentState == 0
-        else {
-            fatalError("something wrong")
-        }
-        
         return true
     }
 }
