@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Control Table Value
 
-enum ControlTableValue {
+enum ControlTableAction {
     
     case some(state: Int)
     case shift(state: Int)
