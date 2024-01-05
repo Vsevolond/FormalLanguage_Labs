@@ -101,7 +101,7 @@ extension FSM {
 extension FSM {
     
     func analyse(word: String) -> Bool {
-        return true
+        
     }
 }
 
