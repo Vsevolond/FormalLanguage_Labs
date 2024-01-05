@@ -9,10 +9,6 @@ struct Stack<Element> {
     var isEmpty: Bool {
         top() == nil
     }
-    
-    init(items: [Element] = []) {
-        self.items = items.reversed()
-    }
 
     mutating func push(_ item: Element) {
         items.append(item)
@@ -34,7 +30,7 @@ struct Stack<Element> {
             top.append(pop())
         }
         
-        return top.reversed()
+        return top
     }
 
     func top() -> Element? {

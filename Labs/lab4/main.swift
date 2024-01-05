@@ -36,8 +36,7 @@ let grammar = Grammar(from: grammarFile)
 do {
     let fsm = try FSM(from: grammar)
     let word = readFromFile(fileName: Constants.wordFileName).reduce("", +)
-    let isBelong = fsm.analyse(word: word)
-    print(isBelong)
+    try fsm.analyse(word: word)
 } catch {
     print(error)
 }

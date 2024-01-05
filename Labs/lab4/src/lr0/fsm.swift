@@ -5,6 +5,8 @@ import Foundation
 enum FSMError: Error {
     
     case notLR0Grammar
+    case accepted
+    case notAccepted
 }
 
 // MARK: - FSM
@@ -15,7 +17,7 @@ class FSM {
     private var initialState: FSMState
     private var transitions: [Int: [GrammarSymbol: Int]] = [:]
     
-    private var controlTable: [Int: [GrammarSymbol: ControlTableValue]] = [:]
+    private var controlTable: ControlTable = .init()
     private var grammar: Grammar
     
     init(from grammar: Grammar) throws {
@@ -36,7 +38,6 @@ class FSM {
 
                 if let existState = states.first(where: { $0 == newState }) {
                     transitions[state.id]?.updateValue(existState.id, forKey: token)
-                    FSMState.ID -= 1
                 } else {
                     states.insert(newState)
                     transitions[state.id]?.updateValue(newState.id, forKey: token)
@@ -46,7 +47,11 @@ class FSM {
             }
         }
         
-        try fillControlTable()
+        do {
+            try fillControlTable()
+        } catch {
+            throw FSMError.notLR0Grammar
+        }
     }
     
     func printFSM() {
@@ -62,13 +67,13 @@ class FSM {
             print()
         }
         
-        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
-            print("\(state):")
-            for (symbol, action) in dict {
-                print("\(symbol.value) = \(action.value)")
-            }
-            print()
-        }
+//        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
+//            print("\(state):")
+//            for (symbol, action) in dict {
+//                print("\(symbol.value) = \(action.value)")
+//            }
+//            print()
+//        }
     }
 }
 
@@ -78,18 +83,14 @@ extension FSM {
     
     private func fillControlTable() throws {
         for (from, byTo) in transitions {
-            controlTable[from] = [:]
             for (by, to) in byTo {
                 
-                if by.isTerm {
-                    controlTable[from]?.updateValue(.shift(state: to), forKey: by)
-                } else {
-                    controlTable[from]?.updateValue(.some(state: to), forKey: by)
-                }
+                let action: ControlTableAction = by.isTerm ? .shift(state: to) : .some(state: to)
+                try controlTable.set(to: from, by: by, action: action)
             }
         }
         
-        try states.filter { $0.isFinal }.forEach { state in
+        for state in states.filter({ $0.isFinal }) {
             guard
                 let item = state.endedItem,
                 let followSet = grammar.getFollowSet(of: item.grammarRule.left)
@@ -97,13 +98,12 @@ extension FSM {
                 fatalError("something wrong")
             }
             
-            try followSet.forEach { term in
-                if let values = controlTable[state.id], values[term] != nil {
-                    throw FSMError.notLR0Grammar
-                }
-                controlTable[state.id]?.updateValue(.reduce(by: item.toGrammarRule()), forKey: term)
+            for term in followSet {
+                try controlTable.set(to: state.id, by: term, action: .reduce(by: item.toGrammarRule()))
             }
         }
+        
+        try controlTable.set(to: initialState.id, by: grammar.startNonTerm, action: .accept)
     }
 }
 
@@ -111,58 +111,50 @@ extension FSM {
 
 extension FSM {
     
-    func analyse(word: String) -> Bool {
-        var tokens = Stack<GrammarSymbol>(items: word.map { $0.grammarSymbol }.withAppending(.end))
-        var stack = Stack<GrammarSymbol>()
-        var states = Stack<Int>()
-
-        states.push(0)
-        var currentState: Int {
-            states.top() ?? -1
-        }
+    func analyse(word: String) throws {
+        var tokens = word.lowercased().map { $0.grammarSymbol }.withAppending(.end)
+        var stack: Stack<TokenState> = .init()
         
-        while stack.top() != grammar.startNonTerm {
-            let token = tokens.pop()
-
-            guard
-                let values = controlTable[currentState],
-                let controlValue = values[token]
-            else {
-                return false
+        stack.push(.init(state: initialState.id, token: .eps))
+        var currentState = initialState.id
+        
+        var currentToken = tokens.removeFirst()
+        var lastToken = currentToken
+        
+        while !stack.isEmpty {
+            guard let action = try? controlTable.get(for: currentState, by: currentToken) else {
+                throw FSMError.notAccepted
             }
             
-            switch controlValue {
+            switch action {
                 
             case .some(let state):
-                states.push(state)
+                stack.push(.init(state: state, token: currentToken))
+                currentState = state
+                currentToken = lastToken
                 
             case .shift(let state):
-                stack.push(token)
-                states.push(state)
-                
+                stack.push(.init(state: state, token: currentToken))
+                currentState = state
+                currentToken = tokens.removeFirst()
+
             case .reduce(let rule):
-                let right = stack.pop(count: rule.right.count)
-                states.pop(count: right.count)
+                let top = stack.pop(count: rule.right.count).reversed()
+                let right = top.map { $0.token }
                 
-                guard right == rule.right else {
+                guard right == rule.right, let state = stack.top()?.state else {
                     fatalError("something wrong")
                 }
                 
-                tokens.push(token)
-                tokens.push(rule.left)
-                stack.push(rule.left)
+                currentState = state
+                if currentToken.isTerm {
+                    lastToken = currentToken
+                }
+                currentToken = rule.left
+                
+            case .accept:
+                throw FSMError.accepted
             }
         }
-        
-        guard
-            stack.pop() == tokens.pop(),
-            stack.isEmpty,
-            tokens.top() == .end,
-            currentState == 0
-        else {
-            fatalError("something wrong")
-        }
-        
-        return true
     }
 }

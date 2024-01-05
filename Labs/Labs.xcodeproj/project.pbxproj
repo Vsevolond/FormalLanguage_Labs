@@ -17,8 +17,11 @@
 		D38CE7562B418539001782BD /* grammar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7552B418539001782BD /* grammar.swift */; };
 		D38CE7582B418554001782BD /* lr0-item.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7572B418554001782BD /* lr0-item.swift */; };
 		D38CE75A2B418566001782BD /* fsm-state.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7592B418566001782BD /* fsm-state.swift */; };
-		D38CE75C2B418581001782BD /* control-table-value.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE75B2B418581001782BD /* control-table-value.swift */; };
+		D38CE75C2B418581001782BD /* control-table-action.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE75B2B418581001782BD /* control-table-action.swift */; };
 		D38CE75E2B418594001782BD /* fsm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE75D2B418594001782BD /* fsm.swift */; };
+		D39387B62B48321200F11C57 /* control-table-row.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B52B48321200F11C57 /* control-table-row.swift */; };
+		D39387B82B48322700F11C57 /* control-table.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B72B48322700F11C57 /* control-table.swift */; };
+		D39387BA2B4851BE00F11C57 /* token-state.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B92B4851BE00F11C57 /* token-state.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -70,9 +73,12 @@
 		D38CE7552B418539001782BD /* grammar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = grammar.swift; sourceTree = "<group>"; };
 		D38CE7572B418554001782BD /* lr0-item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "lr0-item.swift"; sourceTree = "<group>"; };
 		D38CE7592B418566001782BD /* fsm-state.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "fsm-state.swift"; sourceTree = "<group>"; };
-		D38CE75B2B418581001782BD /* control-table-value.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-value.swift"; sourceTree = "<group>"; };
+		D38CE75B2B418581001782BD /* control-table-action.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-action.swift"; sourceTree = "<group>"; };
 		D38CE75D2B418594001782BD /* fsm.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fsm.swift; sourceTree = "<group>"; };
 		D38CE75F2B4187BB001782BD /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
+		D39387B52B48321200F11C57 /* control-table-row.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-row.swift"; sourceTree = "<group>"; };
+		D39387B72B48322700F11C57 /* control-table.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table.swift"; sourceTree = "<group>"; };
+		D39387B92B4851BE00F11C57 /* token-state.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "token-state.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,8 +183,11 @@
 				D38CE7552B418539001782BD /* grammar.swift */,
 				D38CE7572B418554001782BD /* lr0-item.swift */,
 				D38CE7592B418566001782BD /* fsm-state.swift */,
-				D38CE75B2B418581001782BD /* control-table-value.swift */,
+				D38CE75B2B418581001782BD /* control-table-action.swift */,
 				D38CE75D2B418594001782BD /* fsm.swift */,
+				D39387B52B48321200F11C57 /* control-table-row.swift */,
+				D39387B72B48322700F11C57 /* control-table.swift */,
+				D39387B92B4851BE00F11C57 /* token-state.swift */,
 			);
 			path = lr0;
 			sourceTree = "<group>";
@@ -304,10 +313,13 @@
 				D38CE7522B41850E001782BD /* grammar-symbol.swift in Sources */,
 				D38CE7502B4184F3001782BD /* stack.swift in Sources */,
 				D38CE75E2B418594001782BD /* fsm.swift in Sources */,
-				D38CE75C2B418581001782BD /* control-table-value.swift in Sources */,
+				D38CE75C2B418581001782BD /* control-table-action.swift in Sources */,
 				D38CE7562B418539001782BD /* grammar.swift in Sources */,
 				D38CE7542B418526001782BD /* grammar-rule.swift in Sources */,
+				D39387BA2B4851BE00F11C57 /* token-state.swift in Sources */,
+				D39387B82B48322700F11C57 /* control-table.swift in Sources */,
 				D38CE75A2B418566001782BD /* fsm-state.swift in Sources */,
+				D39387B62B48321200F11C57 /* control-table-row.swift in Sources */,
 				D38CE74E2B4184DB001782BD /* extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

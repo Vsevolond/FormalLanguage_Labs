@@ -4,7 +4,7 @@ import Foundation
 
 struct FSMState {
     
-    static var ID: Int = 0
+    private static var ID: Int = 0
     private var items: Set<LR0Item>
     let id: Int
     
