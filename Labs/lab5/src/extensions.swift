@@ -12,6 +12,12 @@ extension Dictionary where Value: SetAlgebra, Value.Element: Hashable {
 
 extension Array {
     
+    func withInserting(_ element: Element, at index: Int) -> Array<Element> {
+        var newArray = self
+        newArray.insert(element, at: index)
+        return newArray
+    }
+    
     func withAppending(_ element: Element) -> Array<Element> {
         var newArray = self
         newArray.append(element)
@@ -28,6 +34,15 @@ extension Array {
         var newArray = self
         newArray.removeLast()
         return newArray
+    }
+    
+    func pairForEach(_ handler: ((Element, Element)) -> Void) {
+        guard count > 1 else { return }
+        
+        for i in 0..<count-1 {
+            let pair = (self[i], self[i + 1])
+            handler(pair)
+        }
     }
 }
 

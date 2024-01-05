@@ -34,6 +34,9 @@
 		D38CE7482B417A23001782BD /* fsm.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7472B417A23001782BD /* fsm.swift */; };
 		D38CE7622B456FA5001782BD /* control-table.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7612B456FA5001782BD /* control-table.swift */; };
 		D38CE7642B45703D001782BD /* control-table-row.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7632B45703D001782BD /* control-table-row.swift */; };
+		D38CE7662B45C0EC001782BD /* gss-node.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7652B45C0EC001782BD /* gss-node.swift */; };
+		D38CE7682B45C0F8001782BD /* gs-stack.swift in Sources */ = {isa = PBXBuildFile; fileRef = D38CE7672B45C0F8001782BD /* gs-stack.swift */; };
+		D39387B42B4816A000F11C57 /* gss-edge.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B32B4816A000F11C57 /* gss-edge.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -115,6 +118,9 @@
 		D38CE7602B418886001782BD /* run.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = run.sh; sourceTree = "<group>"; };
 		D38CE7612B456FA5001782BD /* control-table.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table.swift"; sourceTree = "<group>"; };
 		D38CE7632B45703D001782BD /* control-table-row.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-row.swift"; sourceTree = "<group>"; };
+		D38CE7652B45C0EC001782BD /* gss-node.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "gss-node.swift"; sourceTree = "<group>"; };
+		D38CE7672B45C0F8001782BD /* gs-stack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "gs-stack.swift"; sourceTree = "<group>"; };
+		D39387B32B4816A000F11C57 /* gss-edge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "gss-edge.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -262,6 +268,9 @@
 				D38CE7472B417A23001782BD /* fsm.swift */,
 				D38CE7612B456FA5001782BD /* control-table.swift */,
 				D38CE7632B45703D001782BD /* control-table-row.swift */,
+				D38CE7652B45C0EC001782BD /* gss-node.swift */,
+				D38CE7672B45C0F8001782BD /* gs-stack.swift */,
+				D39387B32B4816A000F11C57 /* gss-edge.swift */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -427,12 +436,15 @@
 				D38CE7642B45703D001782BD /* control-table-row.swift in Sources */,
 				D38CE73C2B417945001782BD /* stack.swift in Sources */,
 				D38CE73A2B4178DE001782BD /* grammar.swift in Sources */,
+				D39387B42B4816A000F11C57 /* gss-edge.swift in Sources */,
 				D38CE7332B417868001782BD /* main.swift in Sources */,
 				D38CE7482B417A23001782BD /* fsm.swift in Sources */,
+				D38CE7682B45C0F8001782BD /* gs-stack.swift in Sources */,
 				D38CE7462B417A00001782BD /* control-table-action.swift in Sources */,
 				D38CE73E2B41796F001782BD /* grammar-symbol.swift in Sources */,
 				D38CE7382B4178A9001782BD /* extensions.swift in Sources */,
 				D38CE7622B456FA5001782BD /* control-table.swift in Sources */,
+				D38CE7662B45C0EC001782BD /* gss-node.swift in Sources */,
 				D38CE7442B4179C6001782BD /* fsm-state.swift in Sources */,
 				D38CE7402B41798B001782BD /* grammar-rule.swift in Sources */,
 			);

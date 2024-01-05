@@ -18,4 +18,21 @@ enum ControlTableAction {
             return "r(\(rule.stringValue))"
         }
     }
+    
+    var priority: Int {
+        switch self {
+        case .some(_):
+            return 0
+        case .shift(_):
+            return 1
+        case .reduce(_):
+            return 2
+        }
+    }
+}
+
+extension ControlTableAction: Comparable {
+    static func < (lhs: ControlTableAction, rhs: ControlTableAction) -> Bool {
+        return lhs.priority < rhs.priority
+    }
 }
