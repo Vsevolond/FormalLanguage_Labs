@@ -25,7 +25,9 @@ def add_quotes_to_terminals(grammar_str: str) -> str:
 
             # Добавление кавычек к терминалам
             for i, symbol in enumerate(symbols):
-                if symbol == '|' or (len(symbol) > 1 and symbol[0] == symbol[-1] == "'"):
+                if symbol in {'|', '(', ')'} or (len(symbol) > 1 and symbol[0] == symbol[-1] == "'"):
+                    continue
+                if '(' in symbol or ')' in symbol:
                     continue
                 if not symbol.isalpha() or symbol.isnumeric() or symbol.islower():
                     symbols[i] = f"'{symbol}'"
