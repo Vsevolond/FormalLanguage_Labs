@@ -1,18 +1,22 @@
 import sys
 from functions import *
+from nltk.parse import ChartParser
 
 
 def main():
     input_file = f"../{sys.argv[1]}" if len(sys.argv) > 1 else "../grammar.txt"
-    grammar = Grammar.load_grammar(input_file)
+    grammar = read_grammar_from_file(input_file)
+    parser = ChartParser(grammar)
 
-    word = input()
+    # Предложение для анализа
+    sentence = "2 + 3 * 4"
 
-    parse = run_parse(word, grammar)
-    if parse is None:
-        print("NO")
+    if is_in_grammar(parser, grammar, sentence):
+        chart = parser.chart_parse(sentence.split())
+        for tree in chart.parses(grammar.start()):
+            tree.pretty_print()
     else:
-        parse.pretty_print()
+        print("NO")
 
 
 if __name__ == "__main__":
