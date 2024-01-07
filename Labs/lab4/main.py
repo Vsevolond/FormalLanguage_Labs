@@ -1,5 +1,5 @@
 import sys
-from functions import *
+from src.Earley.functions import *
 from nltk.parse import ChartParser
 
 
