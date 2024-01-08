@@ -1,3 +1,5 @@
+import re
+
 from nltk import CFG
 from nltk.parse import EarleyChartParser
 
@@ -106,7 +108,7 @@ def is_in_grammar(parser: EarleyChartParser, grammar: CFG, expression: list[str]
     return False
 
 
-def remove_spaces_and_convert_to_list(input_string):
+def prepare_expression(input_string):
     """
     Удаляет пробелы из строки и преобразует ее в список символов.
 
@@ -117,3 +119,94 @@ def remove_spaces_and_convert_to_list(input_string):
     - list: Список символов.
     """
     return list(input_string.replace(" ", ""))
+
+
+def reverse_inside_brackets(text: str) -> str:
+    """
+    Инвертирует текст внутри круглых скобок, сохраняя общую структуру текста.
+
+    Parameters:
+    - text (str): Входной текст, содержащий выражения внутри круглых скобок.
+
+    Returns:
+    - str: Текст с инвертированным содержимым внутри скобок.
+    """
+    def reverse_text_inside(match: re.Match) -> str:
+        """
+        Вспомогательная функция для инверсии содержимого внутри пары скобок.
+
+        Parameters:
+        - match (re.match): Объект совпадения, представляющий пару скобок.
+
+        Returns:
+        - str: Инвертированное содержимое внутри скобок.
+        """
+        inside_text = match.group(1)
+        reversed_inside = ' '.join(reversed(inside_text.strip('()').split()))
+        return f"({reversed_inside})"
+
+    def split_with_brackets(text: str) -> list[str]:
+        """
+        Вспомогательная функция для разделения текста на основе выражений внутри скобок.
+
+        Parameters:
+        - text (str): Входной текст, содержащий выражения внутри скобок.
+
+        Returns:
+        - list: Список выражений внутри скобок.
+        """
+        expressions = re.split(r"('\([^']+\)')", text)
+
+        # Удаляем пустые строки из результата
+        expressions = [expr.strip() for expr in expressions if expr]
+
+        return expressions
+
+    # Проверяем наличие скобок в исходной строке
+    if '(' in text and ')' in text:
+        reversed_text = re.sub(r'\(([^()]*)\)', reverse_text_inside, text)
+        reversed_text = split_with_brackets(reversed_text)[::-1]
+        reverse = []
+        for i in reversed_text:
+            if '(' not in i and ')' not in i:
+                reverse.append(' '.join(reversed(i.split())))
+            else:
+                reverse.append(i)
+        return ' '.join(reverse)
+    else:
+        # Если скобок нет, просто инвертируем всю строку
+        return ' '.join(reversed(text.split()))
+
+
+def reverse_right_expression(grammar_str: str) -> str:
+    """
+    Инвертирует выражения справа от символа "->" в строке грамматики, сохраняя структуру строки.
+
+    Parameters:
+    - grammar_str (str): Входная строка с правилами грамматики.
+
+    Returns:
+    - str: Строка с инвертированными выражениями справа от символа "->".
+    """
+    lines = grammar_str.split('\n')
+    reversed_lines = []
+
+    for line in lines:
+        parts = line.split('->')
+
+        if len(parts) == 2:
+            left_side = parts[0].strip()
+            right_side = parts[1].strip()
+
+            # Переворачиваем выражения после "->"
+            reversed_right_side = reverse_inside_brackets(right_side)
+
+            # Собираем строку с перевернутыми выражениями
+            reversed_line = f"{left_side} -> {reversed_right_side}"
+            reversed_lines.append(reversed_line)
+        else:
+            reversed_lines.append(line)
+
+    # Объединяем строки
+    result = '\n'.join(reversed_lines)
+    return result
