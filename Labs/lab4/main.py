@@ -10,7 +10,7 @@ def main():
 
     # Предложение для анализа
     sentence = "n + n * n"
-    sentence = list(sentence.replace(" ", ""))
+    sentence = remove_spaces_and_convert_to_list(sentence)
 
     if is_in_grammar(parser, grammar, sentence):
         chart = parser.chart_parse(sentence)

@@ -104,3 +104,16 @@ def is_in_grammar(parser: EarleyChartParser, grammar: CFG, expression: list[str]
         pass
 
     return False
+
+
+def remove_spaces_and_convert_to_list(input_string):
+    """
+    Удаляет пробелы из строки и преобразует ее в список символов.
+
+    Parameters:
+    - input_string (str): Исходная строка.
+
+    Returns:
+    - list: Список символов.
+    """
+    return list(input_string.replace(" ", ""))
