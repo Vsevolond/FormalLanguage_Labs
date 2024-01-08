@@ -1,6 +1,5 @@
 import sys
 from src.Earley.functions import *
-from nltk.parse import EarleyChartParser
 
 
 def main():
@@ -11,9 +10,10 @@ def main():
 
     # Предложение для анализа
     sentence = "n + n * n"
+    sentence = list(sentence.replace(" ", ""))
 
     if is_in_grammar(parser, grammar, sentence):
-        chart = parser.chart_parse(sentence.split())
+        chart = parser.chart_parse(sentence)
         for tree in chart.parses(grammar.start()):
             tree.pretty_print()
     else:
