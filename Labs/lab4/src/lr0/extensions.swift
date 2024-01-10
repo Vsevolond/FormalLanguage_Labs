@@ -65,8 +65,6 @@ extension Character {
 extension String {
 
     func removingSpaces() -> String {
-        var string = self
-        string.removeAll(where: { $0 == " " })
-        return string
+        return replacingOccurrences(of: " ", with: "")
     }
 }

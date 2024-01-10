@@ -26,6 +26,10 @@ struct FSMState {
         countOfEndedItems == 1
     }
     
+    var nonTerms: Set<GrammarSymbol> {
+        Set(items.map { $0.grammarRule.left })
+    }
+    
     init(items: Set<LR0Item>) {
         self.id = FSMState.ID
         FSMState.ID += 1
@@ -37,7 +41,7 @@ struct FSMState {
         newState.closure(by: grammar)
         
         guard newState.countOfEndedItems <= 1 else {
-            throw FSMError.notLR0Grammar
+            throw FSMResult.notLR0Grammar
         }
         return newState
     }

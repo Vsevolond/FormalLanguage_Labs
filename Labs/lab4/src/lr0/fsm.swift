@@ -1,12 +1,12 @@
 import Foundation
 
-// MARK: - FSMError
+// MARK: - AnalyseResult
 
-enum FSMError: Error {
+enum FSMResult: Error {
     
     case notLR0Grammar
+    case notAccepted(position: Int, nonTerms: Set<GrammarSymbol>, follow: [GrammarSymbol: Set<GrammarSymbol>])
     case accepted
-    case notAccepted
 }
 
 // MARK: - FSM
@@ -30,7 +30,7 @@ class FSM {
         var stack: Stack<FSMState> = .init()
         stack.push(initialState)
         
-        while stack.top() != nil {
+        while !stack.isEmpty {
             let state = stack.pop()
 
             for token in state.observingTokens.withRemoving(.end) {
@@ -50,7 +50,7 @@ class FSM {
         do {
             try fillControlTable()
         } catch {
-            throw FSMError.notLR0Grammar
+            throw FSMResult.notLR0Grammar
         }
     }
     
@@ -66,14 +66,6 @@ class FSM {
             }
             print()
         }
-        
-//        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
-//            print("\(state):")
-//            for (symbol, action) in dict {
-//                print("\(symbol.value) = \(action.value)")
-//            }
-//            print()
-//        }
     }
 }
 
@@ -123,7 +115,11 @@ extension FSM {
         
         while !stack.isEmpty {
             guard let action = try? controlTable.get(for: currentState, by: currentToken) else {
-                throw FSMError.notAccepted
+                throw FSMResult.notAccepted(
+                    position: word.count - tokens.count,
+                    nonTerms: states.first(where: { $0.id == currentState })!.nonTerms,
+                    follow: grammar.followSet
+                )
             }
             
             switch action {
@@ -153,7 +149,7 @@ extension FSM {
                 currentToken = rule.left
                 
             case .accept:
-                throw FSMError.accepted
+                throw FSMResult.accepted
             }
         }
     }

@@ -23,9 +23,11 @@ private enum Constants {
     #if DEBUG
     static let grammarFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/grammar.txt"
     static let wordFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/word.txt"
+    static let inputFileName = "/Users/vsevolond/UNIVERSITY/FormalLanguage_Labs/Labs/lab4/files/input.json"
     #else
     static let grammarFileName = "grammar.txt"
     static let wordFileName = "word.txt"
+    static let inputFileName = FileManager.default.currentDirectoryPath.appending("/files/input.json")
     #endif
 }
 
@@ -38,7 +40,12 @@ do {
     let word = readFromFile(fileName: Constants.wordFileName).reduce("", +)
     try fsm.analyse(word: word)
 } catch {
-    print(error)
+    guard let result = error as? FSMResult else {
+        fatalError("something wrong")
+    }
+    
+    let provider = JSONProvider(result: result)
+    try provider.write(to: Constants.inputFileName)
 }
 
 

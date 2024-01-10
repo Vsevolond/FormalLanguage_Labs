@@ -4,10 +4,14 @@ import Foundation
 
 struct Stack<Element> {
 
-    var items: [Element] = []
+    private var items: [Element] = []
     
     var isEmpty: Bool {
         top() == nil
+    }
+    
+    var count: Int {
+        items.count
     }
 
     mutating func push(_ item: Element) {

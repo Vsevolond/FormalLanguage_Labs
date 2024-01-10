@@ -22,6 +22,8 @@
 		D39387B62B48321200F11C57 /* control-table-row.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B52B48321200F11C57 /* control-table-row.swift */; };
 		D39387B82B48322700F11C57 /* control-table.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B72B48322700F11C57 /* control-table.swift */; };
 		D39387BA2B4851BE00F11C57 /* token-state.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387B92B4851BE00F11C57 /* token-state.swift */; };
+		D39387C02B4F021000F11C57 /* json-provider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387BF2B4F021000F11C57 /* json-provider.swift */; };
+		D39387C22B4F02BD00F11C57 /* json-response.swift in Sources */ = {isa = PBXBuildFile; fileRef = D39387C12B4F02BD00F11C57 /* json-response.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -79,6 +81,9 @@
 		D39387B52B48321200F11C57 /* control-table-row.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table-row.swift"; sourceTree = "<group>"; };
 		D39387B72B48322700F11C57 /* control-table.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "control-table.swift"; sourceTree = "<group>"; };
 		D39387B92B4851BE00F11C57 /* token-state.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "token-state.swift"; sourceTree = "<group>"; };
+		D39387BE2B4EC51500F11C57 /* input.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = input.json; sourceTree = "<group>"; };
+		D39387BF2B4F021000F11C57 /* json-provider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "json-provider.swift"; sourceTree = "<group>"; };
+		D39387C12B4F02BD00F11C57 /* json-response.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "json-response.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -148,6 +153,7 @@
 		D329C5422B2CEC54004673AE /* lab4 */ = {
 			isa = PBXGroup;
 			children = (
+				D39387BD2B4EC50300F11C57 /* files */,
 				D38CE74B2B4184BE001782BD /* src */,
 				D329C5432B2CEC54004673AE /* main.swift */,
 				D329C5482B360764004673AE /* grammar.txt */,
@@ -188,8 +194,18 @@
 				D39387B52B48321200F11C57 /* control-table-row.swift */,
 				D39387B72B48322700F11C57 /* control-table.swift */,
 				D39387B92B4851BE00F11C57 /* token-state.swift */,
+				D39387BF2B4F021000F11C57 /* json-provider.swift */,
+				D39387C12B4F02BD00F11C57 /* json-response.swift */,
 			);
 			path = lr0;
+			sourceTree = "<group>";
+		};
+		D39387BD2B4EC50300F11C57 /* files */ = {
+			isa = PBXGroup;
+			children = (
+				D39387BE2B4EC51500F11C57 /* input.json */,
+			);
+			path = files;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -313,10 +329,12 @@
 				D38CE7522B41850E001782BD /* grammar-symbol.swift in Sources */,
 				D38CE7502B4184F3001782BD /* stack.swift in Sources */,
 				D38CE75E2B418594001782BD /* fsm.swift in Sources */,
+				D39387C22B4F02BD00F11C57 /* json-response.swift in Sources */,
 				D38CE75C2B418581001782BD /* control-table-action.swift in Sources */,
 				D38CE7562B418539001782BD /* grammar.swift in Sources */,
 				D38CE7542B418526001782BD /* grammar-rule.swift in Sources */,
 				D39387BA2B4851BE00F11C57 /* token-state.swift in Sources */,
+				D39387C02B4F021000F11C57 /* json-provider.swift in Sources */,
 				D39387B82B48322700F11C57 /* control-table.swift in Sources */,
 				D38CE75A2B418566001782BD /* fsm-state.swift in Sources */,
 				D39387B62B48321200F11C57 /* control-table-row.swift in Sources */,

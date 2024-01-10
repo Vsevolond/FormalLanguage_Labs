@@ -10,7 +10,7 @@ class Grammar {
     var startNonTerm: GrammarSymbol
     
     private var firstSet: [GrammarSymbol : Set<GrammarSymbol>]
-    private var followSet: [GrammarSymbol : Set<GrammarSymbol>]
+    var followSet: [GrammarSymbol : Set<GrammarSymbol>]
     
     init(from stringRules: [String]) {
         rules = Grammar.parseGrammarRules(from: stringRules)
