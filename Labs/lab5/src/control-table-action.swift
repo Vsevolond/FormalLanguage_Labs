@@ -4,29 +4,21 @@ import Foundation
 
 enum ControlTableAction {
     
-    case some(state: Int)
+    case some(state: Int, nonTerm: GrammarSymbol)
     case shift(state: Int)
     case reduce(by: GrammarRule)
-    
-    var value: String {
-        switch self {
-        case .some(let state):
-            return String(state)
-        case .shift(let state):
-            return "s(\(state))"
-        case .reduce(let rule):
-            return "r(\(rule.stringValue))"
-        }
-    }
+    case accept
     
     var priority: Int {
         switch self {
-        case .some(_):
+        case .some(_, _):
             return 0
         case .shift(_):
             return 1
         case .reduce(_):
             return 2
+        case .accept:
+            return 3
         }
     }
 }

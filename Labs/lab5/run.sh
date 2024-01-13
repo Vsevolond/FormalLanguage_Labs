@@ -2,12 +2,6 @@
 
 swiftc src/*.swift main.swift -o glr
 
-if [ $# -eq 0 ]; then
-    ./glr ""
-else
-    # Передача аргумента программе
-    ./glr "$1"
-fi
+./glr "$1" "$2"
 
 rm -rf glr
-

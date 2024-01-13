@@ -34,11 +34,24 @@ let grammar = Grammar(from: grammarFile)
 let fsm = FSM(from: grammar)
 #if DEBUG
 let word = readLine()!
+let numStateOfStack = Int(readLine()!)!
 #else
 let word = CommandLine.arguments[1]
+let numStateOfStack = Int(CommandLine.arguments[2])!
 #endif
 
-let isBelong = fsm.analyse(word: word)
-print(isBelong)
+let (isBelong, index, snapshot) = fsm.analyse(word: word, numStateOfStack: numStateOfStack)
+if isBelong {
+    print("accepted")
+    snapshot.forEach { string in
+        print(string)
+    }
+    
+} else {
+    print("not accepted, error in position: \(index)")
+    snapshot.forEach { string in
+        print(string)
+    }
+}
 
 

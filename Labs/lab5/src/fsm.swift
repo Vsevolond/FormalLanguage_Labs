@@ -54,14 +54,6 @@ class FSM {
             }
             print()
         }
-        
-//        for (state, dict) in controlTable.sorted(by: { $0.key < $1.key }) {
-//            print("\(state):")
-//            for (symbol, actions) in dict {
-//                print("\(symbol.value) = \(actions.reduce(into: "") { $0 += "\($1.value) "})")
-//            }
-//            print()
-//        }
     }
 }
 
@@ -76,7 +68,7 @@ extension FSM {
                 if by.isTerm {
                     controlTable.add(to: from, by: by, action: .shift(state: to))
                 } else {
-                    controlTable.add(to: from, by: by, action: .some(state: to))
+                    controlTable.add(to: from, by: by, action: .some(state: to, nonTerm: by))
                 }
             }
         }
@@ -93,6 +85,8 @@ extension FSM {
                 }
             }
         }
+        
+        controlTable.add(to: initialState.id, by: grammar.startNonTerm, action: .accept)
     }
 }
 
@@ -100,8 +94,115 @@ extension FSM {
 
 extension FSM {
     
-    func analyse(word: String) -> Bool {
+    func analyse(word: String, numStateOfStack: Int) -> (Bool, Int, [String]) {
+        var snapshot: [String]? = nil
+        var tokens: [(value: GrammarSymbol, index: Int)] = word
+                                                         .lowercased()
+                                                         .map { $0.grammarSymbol }
+                                                         .withAppending(.end)
+                                                         .enumerated()
+                                                         .map { ($1, $0) }
+        var stack = GSStack()
         
+        stack.push(node: .init(state: initialState.id, token: .eps, point: -1))
+        var token = tokens.removeFirst()
+        
+        while true {
+
+            if token.index == numStateOfStack {
+                snapshot = stack.snapshot
+            }
+            
+            let nodes = stack.activeNodes
+            guard !nodes.isEmpty else {
+                return (false, token.index, snapshot ?? stack.snapshot)
+            }
+
+            let actionsByNode: [(GSSNode, [ControlTableAction])] = nodes.map {
+                ($0, controlTable.get(for: $0.state, by: token.value).sorted(by: >))
+            }
+            
+            var isAccepted = false
+            for (node, actions) in actionsByNode {
+
+                if let lastAction = actions.last {
+                    actions.withRemovingLast().forEach { action in
+                        isAccepted = isAccepted || perform(action: action, for: node, by: token, to: &stack)
+                    }
+                    isAccepted = isAccepted || perform(action: lastAction, isLast: true, for: node, by: token, to: &stack)
+                    
+                } else {
+                    stack.popBranch(from: node)
+                }
+            }
+            
+            if isAccepted {
+                return (true, token.index, snapshot ?? stack.snapshot)
+                
+            } else if let newToken = tokens.first {
+                token = newToken
+                tokens.removeFirst()
+            }
+        }
+    }
+    
+    private func perform(
+        action: ControlTableAction,
+        isLast: Bool = false,
+        for node: GSSNode,
+        by token: (value: GrammarSymbol, index: Int),
+        to stack: inout GSStack
+    ) -> Bool {
+        switch action {
+            
+        case .some(let state, let nonTerm):
+            let newNode = stack.push(to: node, newNode: .init(state: state, token: nonTerm, point: token.index))
+            
+            let actions = controlTable.get(for: state, by: token.value).sorted(by: >)
+            var isAccepted = false
+            
+            if let lastAction = actions.last {
+                actions.withRemovingLast().forEach { nextAction in
+                    isAccepted = isAccepted || perform(action: nextAction, for: newNode, by: token, to: &stack)
+                }
+                isAccepted = isAccepted || perform(action: lastAction, isLast: true, for: newNode, by: token, to: &stack)
+
+            } else {
+                stack.popBranch(from: newNode)
+            }
+            
+            return isAccepted
+            
+        case .shift(let state):
+            let newNode = GSSNode(state: state, token: token.value, point: token.index)
+            stack.push(to: node, newNode: newNode)
+            return false
+            
+        case .reduce(let rule):
+            let stopNodes = stack.pop(from: node, tokens: rule.right.reversed(), withRemovingTop: isLast)
+            let actionsByNode: [(GSSNode, [ControlTableAction])] = stopNodes.map {
+                ($0, controlTable.get(for: $0.state, by: rule.left).sorted(by: >))
+            }
+            
+            var isAccepted = false
+            for (stopNode, actions) in actionsByNode {
+                
+                if let lastAction = actions.last {
+                    actions.withRemovingLast().forEach { nextAction in
+                        isAccepted = isAccepted || perform(action: nextAction, for: stopNode, by: token, to: &stack)
+                    }
+                    isAccepted = isAccepted || perform(action: lastAction, isLast: true, for: stopNode, by: token, to: &stack)
+
+                } else {
+                    stack.popBranch(from: stopNode)
+                }
+            }
+            
+            return isAccepted
+            
+        case .accept:
+            return true
+        }
     }
 }
 

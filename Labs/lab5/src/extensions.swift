@@ -59,6 +59,21 @@ extension Set {
         newSet.remove(element)
         return newSet
     }
+    
+    mutating func removeAll(where satisfy: (Element) -> Bool) {
+        self = filter { !satisfy($0) }
+    }
+    
+    func combinePairs(with set: Set<Element>) -> [(Element, Element)] {
+        var pairs: [(Element, Element)] = []
+        forEach { elem1 in
+            set.forEach { elem2 in
+                pairs.append((elem1, elem2))
+            }
+        }
+        
+        return pairs
+    }
 }
 
 extension Character {

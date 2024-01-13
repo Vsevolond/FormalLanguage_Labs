@@ -14,11 +14,11 @@ struct ControlTable {
         rows[state]?.add(to: symbol, action: action)
     }
     
-    func getRow(for state: Int) -> ControlTableRow {
+    func get(for state: Int, by symbol: GrammarSymbol) -> [ControlTableAction] {
         guard let row = rows[state] else {
             fatalError("there is no row for state: \(state)")
         }
         
-        return row
+        return row.getValues(for: symbol)
     }
 }

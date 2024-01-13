@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - GSSNode
 
-struct GSSNode {
+class GSSNode {
     
     private static var ID: Int = 0
     let id: Int
