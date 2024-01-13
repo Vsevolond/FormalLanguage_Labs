@@ -94,7 +94,7 @@ extension FSM {
 
 extension FSM {
     
-    func analyse(word: String, numStateOfStack: Int) -> (Bool, Int, [String]) {
+    func analyse(word: String, numStateOfStack: Int?) -> (Bool, Int, [String]) {
         var snapshot: [String]? = nil
         var tokens: [(value: GrammarSymbol, index: Int)] = word
                                                          .lowercased()

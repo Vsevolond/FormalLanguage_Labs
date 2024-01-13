@@ -32,23 +32,23 @@ private enum Constants {
 let grammarFile = readFromFile(fileName: Constants.grammarFileName)
 let grammar = Grammar(from: grammarFile)
 let fsm = FSM(from: grammar)
+let numStateOfStack: Int?
 #if DEBUG
 let word = readLine()!
-let numStateOfStack = Int(readLine()!)!
+numStateOfStack = Int(readLine()!)!
 #else
 let word = CommandLine.arguments[1]
-let numStateOfStack = Int(CommandLine.arguments[2])!
+numStateOfStack = CommandLine.arguments.count > 2 ? Int(CommandLine.arguments[2])! : nil
 #endif
 
 let (isBelong, index, snapshot) = fsm.analyse(word: word, numStateOfStack: numStateOfStack)
 if isBelong {
     print("accepted")
-    snapshot.forEach { string in
-        print(string)
-    }
-    
 } else {
     print("not accepted, error in position: \(index)")
+}
+
+if numStateOfStack != nil {
     snapshot.forEach { string in
         print(string)
     }
