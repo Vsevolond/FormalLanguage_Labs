@@ -60,6 +60,21 @@ extension Character {
             }
         }
     }
+    
+//    var reversed: Character {
+//        switch self {
+//        case "(": return ")"
+//        case "[": return "]"
+//        case "{": return "}"
+//        case "<": return ">"
+//        case ")": return "("
+//        case "]": return "["
+//        case "}": return "{"
+//        case ">": return "<"
+//        default:
+//            return self
+//        }
+//    }
 }
 
 extension String {
@@ -67,4 +82,8 @@ extension String {
     func removingSpaces() -> String {
         return replacingOccurrences(of: " ", with: "")
     }
+    
+//    var reversed: String {
+//        reversed().map { $0.reversed }.reduce(into: "") { $0.append($1) }
+//    }
 }

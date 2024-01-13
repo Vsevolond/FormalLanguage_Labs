@@ -1,3 +1,3 @@
-E -> E + T | E - T | T
-T -> T * F | T / F | F
-F -> (E) | n
+S -> A$B
+A -> aA | a
+B -> bB | b

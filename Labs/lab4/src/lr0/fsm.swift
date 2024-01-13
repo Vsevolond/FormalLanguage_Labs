@@ -5,7 +5,7 @@ import Foundation
 enum FSMResult: Error {
     
     case notLR0Grammar
-    case notAccepted(position: Int, nonTerms: Set<GrammarSymbol>, follow: [GrammarSymbol: Set<GrammarSymbol>])
+    case notAccepted(position: Int)
     case accepted
 }
 
@@ -115,11 +115,7 @@ extension FSM {
         
         while !stack.isEmpty {
             guard let action = try? controlTable.get(for: currentState, by: currentToken) else {
-                throw FSMResult.notAccepted(
-                    position: word.count - tokens.count,
-                    nonTerms: states.first(where: { $0.id == currentState })!.nonTerms,
-                    follow: grammar.followSet
-                )
+                throw FSMResult.notAccepted(position: word.count + 1 - tokens.count)
             }
             
             switch action {

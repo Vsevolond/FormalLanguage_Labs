@@ -28,4 +28,13 @@ enum GrammarSymbol: Hashable {
             return "@"
         }
     }
+    
+//    var reversed: GrammarSymbol {
+//        switch self {
+//        case .term(let char):
+//            return .term(char.reversed)
+//        case .nonTerm(_), .eps, .end:
+//            return self
+//        }
+//    }
 }

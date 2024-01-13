@@ -27,4 +27,10 @@ struct GrammarRule: Hashable {
     func convertedToLR0Item() -> LR0Item {
         .init(grammarRule: self)
     }
+    
+    func reversed() -> GrammarRule {
+        let reversedLeft = left
+        let reversedRight = right.reversed().map { $0 }//.map { $0.reversed }
+        return .init(left: reversedLeft, right: reversedRight)
+    }
 }

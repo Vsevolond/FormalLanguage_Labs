@@ -30,6 +30,24 @@ class Grammar {
         makeFollowSet()
     }
     
+    init(nonTerms: Set<GrammarSymbol>, terms: Set<GrammarSymbol>, rules: [GrammarRule], startNonTerm: GrammarSymbol) {
+        self.nonTerms = nonTerms
+        self.terms = terms
+        self.rules = rules
+        self.startNonTerm = startNonTerm
+        
+        self.firstSet = nonTerms.reduce(into: [GrammarSymbol : Set<GrammarSymbol>]()) { $0.updateValue(.init(), forKey: $1) }
+        self.followSet = nonTerms.reduce(into: [GrammarSymbol : Set<GrammarSymbol>]()) { $0.updateValue(.init(), forKey: $1) }
+        
+        makeFirstSet()
+        makeFollowSet()
+    }
+    
+    func reversed() -> Grammar {
+        let reversedRules = rules.map { $0.reversed() }
+        return .init(nonTerms: nonTerms, terms: terms, rules: reversedRules, startNonTerm: startNonTerm)
+    }
+    
     func printGrammar() {
         rules.forEach { rule in
             print(rule.stringValue)
