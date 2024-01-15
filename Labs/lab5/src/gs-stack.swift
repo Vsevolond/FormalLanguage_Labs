@@ -77,6 +77,12 @@ class GSStack {
         }
     }
     
+    func printSnapshot() {
+        snapshot.forEach { string in
+            print(string)
+        }
+    }
+    
     private func pop(node: GSSNode) -> [GSSNode] {
         let incoming = edges.filter { $0.to == node.id }
         guard incoming.count == 0 else {

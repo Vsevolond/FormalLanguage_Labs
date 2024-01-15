@@ -158,17 +158,20 @@ extension FSM {
         case .some(let state, let nonTerm):
             let newNode = stack.push(to: node, newNode: .init(state: state, token: nonTerm, point: token.index))
             
-            let actions = controlTable.get(for: state, by: token.value).sorted(by: >)
             var isAccepted = false
             
-            if let lastAction = actions.last {
-                actions.withRemovingLast().forEach { nextAction in
-                    isAccepted = isAccepted || perform(action: nextAction, for: newNode, by: token, to: &stack)
+            if newNode.isActive {
+                let actions = controlTable.get(for: state, by: token.value).sorted(by: >)
+                
+                if let lastAction = actions.last {
+                    actions.withRemovingLast().forEach { nextAction in
+                        isAccepted = isAccepted || perform(action: nextAction, for: newNode, by: token, to: &stack)
+                    }
+                    isAccepted = isAccepted || perform(action: lastAction, isLast: true, for: newNode, by: token, to: &stack)
+                    
+                } else {
+                    stack.popBranch(from: newNode)
                 }
-                isAccepted = isAccepted || perform(action: lastAction, isLast: true, for: newNode, by: token, to: &stack)
-
-            } else {
-                stack.popBranch(from: newNode)
             }
             
             return isAccepted
