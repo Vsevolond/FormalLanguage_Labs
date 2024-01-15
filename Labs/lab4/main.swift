@@ -71,11 +71,11 @@ do {
                 print("Reversed grammar is not LR(0) grammar")
                 
             case .notAccepted(let j):
-                if j > word.count - i + 1 {
-                    let k0 = word.count - j + 1
-                    print("Not accepted, error in position: \(k0)")
+                if j >= word.count - i + 1 {
+                    print("Not accepted, error in position: \(i)")
                 } else {
-                    print("Not accepted, errors in positions: \(i), \(j)")
+                    let k = word.count - j + 1
+                    print("Not accepted, errors in positions: \(i), \(k)")
                 }
                 
             case .accepted:
